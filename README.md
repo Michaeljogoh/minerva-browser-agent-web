@@ -1,10 +1,6 @@
 # Minerva Agent — Frontend
 
-Next.js **Agent Workspace** UI for [Minerva Browser Agent](../api/README.md). Streams agent reasoning over Socket.IO, shows the Browserbase live session, handles human approvals, and renders structured task results (Tax Delta / IRS.gov).
-
-**Canonical spec:** [`docs/frontend-prd.md`](docs/frontend-prd.md)  
-**Visual system:** [`Stagehand-DESIGN.md`](Stagehand-DESIGN.md)  
-**Backend contract:** [`../api/docs/backend-prd.md`](../api/docs/backend-prd.md) §12 (WebSocket events)
+Next.js **Agent Workspace** UI for [Minerva Browser Agent]. Streams agent reasoning over Socket.IO, shows the Browserbase live session, handles human approvals, and renders structured task results (Tax Delta / IRS.gov).
 
 ---
 
@@ -103,8 +99,4 @@ Set `NEXT_PUBLIC_BACKEND_URL` to your deployed API origin in the host environmen
 
 ---
 
-## Related docs
 
-- [API README](../api/README.md) — agent, Browserbase, Socket.IO gateway
-- [Product PRD](../api/docs/minerva-browser-agent-prd.md)
-- [Frontend cursor rules](.cursor/rules/frontend.mdc)
