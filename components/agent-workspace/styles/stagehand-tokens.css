@@ -1,0 +1,92 @@
+/* Stagehand design tokens — synced with stagehand.dev/evals chrome + dev palettes */
+
+:root {
+  /* Layout */
+  --sidebar-width: 380px;
+  --agent-rail-width: 280px;
+  --header-height: 40px;
+
+  /* Light — stagehand chrome (evals page) */
+  --sh-bg: #ffffff;
+  --sh-surface: #f7f9fc;
+  --sh-surface-raised: #f4f4f6;
+  --sh-text: #000000;
+  --sh-text-muted: #444746;
+  --sh-border: #e4e9f2;
+  --sh-accent-green: #00c851;
+  --sh-accent-green-ink: #007d33;
+  --sh-accent-link: #506b9c;
+  --sh-primary: #17171c;
+  --sh-error: #ff5f57;
+  --sh-warning: #febc2e;
+  --sh-grid: rgba(90, 120, 175, 0.06);
+}
+
+.dark {
+  /* Dark — stagehand dev shell */
+  --sh-bg: #0e0e12;
+  --sh-surface: #17171c;
+  --sh-surface-raised: #2a2a33;
+  --sh-text: #d2d2da;
+  --sh-text-muted: #7f7f8d;
+  --sh-border: #2a2a33;
+  --sh-accent-green: #00c851;
+  --sh-accent-green-ink: #00c851;
+  --sh-accent-link: #9bafd3;
+  --sh-primary: #17171c;
+  --sh-error: #ff5f57;
+  --sh-warning: #febc2e;
+  --sh-grid: rgba(90, 120, 175, 0.08);
+}
+
+/* Stagehand-minimal motion — frontend-prd.md §13 */
+@keyframes sh-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sh-dock-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sh-crossfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.motion-card-enter {
+  animation: sh-card-enter 150ms ease forwards;
+}
+
+.motion-dock-enter {
+  animation: sh-dock-enter 180ms ease-out forwards;
+}
+
+.motion-crossfade {
+  animation: sh-crossfade 200ms ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-card-enter,
+  .motion-dock-enter,
+  .motion-crossfade {
+    animation: none;
+  }
+}
