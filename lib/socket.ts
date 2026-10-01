@@ -3,7 +3,9 @@ import { io, type Socket } from "socket.io-client"
 import { getGatewayApiKey } from "@/lib/gateway-auth"
 import { isSessionActive, type ConnectionPhase } from "@/lib/types/agent"
 import { SERVER_INBOUND_EVENTS } from "@/lib/types/events"
-import { useAgentStore } from "@/store/agent.store"
+import { agentErrorToastCopy } from "@/lib/toast-copy"
+import { gooeyToast } from "@/components/ui/goey-toaster"
+import { stoppedSessionPatch, useAgentStore } from "@/store/agent.store"
 
 const MAX_RECONNECT_DELAY_MS = 30_000
 
@@ -11,6 +13,8 @@ let socket: Socket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let reconnectAttempt = 0
 let intentionalDisconnect = false
+let lastConnectErrorToastAt = 0
+const CONNECT_ERROR_TOAST_COOLDOWN_MS = 8_000
 
 export function getBackendUrl(): string {
   const url = process.env.NEXT_PUBLIC_BACKEND_URL
@@ -93,20 +97,14 @@ function bindLifecycleListeners(activeSocket: Socket): void {
 
     const { status, pendingApproval } = useAgentStore.getState()
     if (isSessionActive(status)) {
+      const message =
+        "Connection lost — the running task was stopped on the server. Start a new task to continue."
+      const toast = agentErrorToastCopy(message, { fatal: true })
+      gooeyToast.error(toast.title, { description: toast.description })
       useAgentStore.setState({
-        activeRunId: 0,
-        status: "idle",
-        pendingApproval: null,
-        liveUrl: null,
-        sessionId: null,
-        latestScreenshotUrl: null,
-        currentStep: 0,
-        reasoningSteps: [],
-        replayActive: false,
-        replayVisibleSteps: 0,
+        ...stoppedSessionPatch(),
         error: {
-          message:
-            "Connection lost — the running task was stopped on the server. Start a new task to continue.",
+          message,
           timestamp: Date.now(),
           recoverable: true,
         },
@@ -119,11 +117,18 @@ function bindLifecycleListeners(activeSocket: Socket): void {
   })
 
   activeSocket.on("connect_error", (err: Error) => {
+    const message = err.message || "Could not connect to the server"
+    const now = Date.now()
+    if (now - lastConnectErrorToastAt >= CONNECT_ERROR_TOAST_COOLDOWN_MS) {
+      lastConnectErrorToastAt = now
+      const toast = agentErrorToastCopy(message, { recoverable: true })
+      gooeyToast.error(toast.title, { description: toast.description })
+    }
     useAgentStore.setState({
       isConnected: false,
       error: {
-        message: err.message,
-        timestamp: Date.now(),
+        message,
+        timestamp: now,
         recoverable: true,
       },
     })

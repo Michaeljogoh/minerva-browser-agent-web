@@ -9,9 +9,9 @@ type ConnectionStatusProps = {
 }
 
 const labels: Record<ConnectionPhase, string> = {
-  disconnected: "Disconnected",
+  disconnected: "Offline",
   connecting: "Connecting…",
-  connected: "Connected",
+  connected: "Online",
   reconnecting: "Reconnecting…",
 }
 
@@ -21,7 +21,7 @@ function connectionDotClass(phase: ConnectionPhase): string {
       return "bg-sh-accent-green"
     case "connecting":
     case "reconnecting":
-      return "bg-[var(--sh-warning)] motion-safe:animate-pulse"
+      return "bg-sh-warning motion-safe:animate-pulse"
     default:
       return "bg-sh-text-muted"
   }
@@ -33,7 +33,7 @@ export function ConnectionStatus({ className }: ConnectionStatusProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-sh-border bg-sh-surface px-2.5 py-1 font-mono text-xs text-sh-text-muted",
+        "inline-flex items-center gap-1.5 rounded-full border border-sh-border bg-sh-surface-raised px-2.5 py-1 font-sans text-[12px] text-sh-text-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:shadow-none",
         className,
       )}
     >

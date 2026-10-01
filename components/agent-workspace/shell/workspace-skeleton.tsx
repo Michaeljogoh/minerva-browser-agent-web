@@ -76,7 +76,7 @@ export function WorkspaceSkeleton({
       className="flex h-svh min-h-svh flex-col bg-sh-bg"
       style={
         {
-          "--header-height": "40px",
+          "--header-height": "44px",
           "--sidebar-width": "380px",
           "--agent-rail-width": "280px",
         } as CSSProperties

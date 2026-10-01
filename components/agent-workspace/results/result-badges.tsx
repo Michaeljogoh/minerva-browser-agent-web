@@ -3,6 +3,41 @@
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
+const ERROR_STATUSES = new Set([
+  "missing",
+  "rejected",
+  "unmatched",
+  "mismatch",
+  "missing_payout",
+  "blocked",
+])
+const WARNING_STATUSES = new Set([
+  "proposed_match",
+  "proposed",
+  "found",
+  "needs_review",
+])
+const SUCCESS_STATUSES = new Set([
+  "cleared",
+  "posted",
+  "approved",
+  "matched",
+  "ready",
+])
+
+function statusBadgeTone(status: string): string | undefined {
+  if (ERROR_STATUSES.has(status)) {
+    return "border-transparent bg-sh-error/10 text-sh-error"
+  }
+  if (WARNING_STATUSES.has(status)) {
+    return "border-transparent bg-sh-warning-fill text-sh-warning"
+  }
+  if (SUCCESS_STATUSES.has(status)) {
+    return "border-transparent bg-sh-success-fill text-sh-accent-green"
+  }
+  return undefined
+}
+
 export function StatusBadge({
   status,
   className,
@@ -14,18 +49,8 @@ export function StatusBadge({
     <Badge
       variant="outline"
       className={cn(
-        "rounded-none border-sh-border font-mono text-[10px] capitalize",
-        status === "missing" || status === "rejected" || status === "unmatched"
-          ? "border-[var(--sh-error)] text-[var(--sh-error)]"
-          : status === "proposed_match" ||
-              status === "proposed" ||
-              status === "found"
-            ? "border-[var(--sh-warning)] text-[var(--sh-warning)]"
-            : status === "cleared" ||
-                status === "posted" ||
-                status === "approved"
-              ? "border-sh-accent-green text-sh-accent-green"
-              : undefined,
+        "rounded-full border-sh-border font-sans text-[11px] capitalize",
+        statusBadgeTone(status),
         className,
       )}
     >
@@ -38,9 +63,9 @@ export function TaxSensitiveBadge() {
   return (
     <Badge
       variant="outline"
-      className="rounded-none border-[var(--sh-warning)] font-mono text-[10px] text-[var(--sh-warning)]"
+      className="rounded-full border-transparent bg-sh-warning-fill font-sans text-[11px] text-sh-warning"
     >
-      tax
+      Tax-sensitive
     </Badge>
   )
 }

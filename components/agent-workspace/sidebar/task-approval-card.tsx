@@ -1,7 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, PencilIcon, ShieldAlertIcon, XIcon } from "lucide-react"
+import {
+  CheckIcon,
+  ExternalLinkIcon,
+  LogInIcon,
+  PencilIcon,
+  PlugIcon,
+  ShieldAlertIcon,
+  XIcon,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -54,7 +62,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
         status: "running",
         error: {
           message:
-            "Approval timed out after 5 minutes. Stop the task or start a new one.",
+            "This review timed out after 5 minutes. Stop the job or start a new one.",
           timestamp: Date.now(),
           recoverable: false,
         },
@@ -65,6 +73,22 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
   if (!pendingApproval) {
     return null
   }
+
+  const kind = pendingApproval.kind ?? "approval"
+  const isLogin = kind === "login"
+  const isConnect = kind === "connect"
+  const isHandoff = isLogin || isConnect
+  const title = isLogin
+    ? "Your turn — sign in"
+    : isConnect
+      ? "Connect this app"
+      : "Needs your review"
+  const approveLabel = isLogin
+    ? "I’m signed in"
+    : isConnect
+      ? "I’ve connected"
+      : "Approve"
+  const rejectLabel = isLogin || isConnect ? "Skip for now" : "Don’t do this"
 
   const handleReject = () => {
     approveAction(false)
@@ -93,83 +117,110 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
       aria-modal="true"
       aria-labelledby="task-approval-title"
       className={cn(
-        "motion-dock-enter relative overflow-hidden rounded-xl border border-(--sh-warning)/35 bg-sh-surface-raised/90 shadow-[0_12px_40px_-24px_rgba(0,0,0,0.55)] backdrop-blur-md",
-        "ring-1 ring-(--sh-warning)/15",
+        "motion-dock-enter relative overflow-hidden rounded-xl border bg-sh-surface-raised",
+        isHandoff
+          ? "border-sh-steer/35 bg-sh-steer-fill/60"
+          : "border-sh-warning/35 bg-sh-warning-fill/70",
         className,
       )}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-(--sh-warning)/60 to-transparent"
-      />
-
       <div className="flex flex-col gap-3 p-3.5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-(--sh-warning)/15 text-(--sh-warning)">
-              <ShieldAlertIcon className="size-3.5" aria-hidden />
-            </span>
-            <div className="min-w-0">
-              <p
-                id="task-approval-title"
-                className="font-mono text-[10px] uppercase tracking-[0.14em] text-(--sh-warning)"
-              >
-                Approval required
-              </p>
-              <p className="mt-0.5 font-mono text-[10px] text-sh-text-muted">
-                Expires in {formatCountdown(remainingMs)}
-              </p>
-            </div>
+        <div className="flex items-start gap-2.5">
+          <span
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-full",
+              isHandoff
+                ? "bg-sh-steer/15 text-sh-steer"
+                : "bg-sh-warning/15 text-sh-warning",
+            )}
+          >
+            {isLogin ? (
+              <LogInIcon className="size-4" aria-hidden />
+            ) : isConnect ? (
+              <PlugIcon className="size-4" aria-hidden />
+            ) : (
+              <ShieldAlertIcon className="size-4" aria-hidden />
+            )}
+          </span>
+          <div className="min-w-0">
+            <p
+              id="task-approval-title"
+              className="font-sans text-[13px] font-medium text-sh-text"
+            >
+              {title}
+            </p>
+            <p className="mt-0.5 font-sans text-[12px] tabular-nums text-sh-text-muted">
+              This waits {formatCountdown(remainingMs)}
+            </p>
           </div>
         </div>
+
+        {pendingApproval.connectUrl ? (
+          <a
+            href={pendingApproval.connectUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 font-sans text-[12px] text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:bg-[color-mix(in_srgb,var(--primary),#000_8%)] dark:hover:bg-[color-mix(in_srgb,var(--primary),#fff_12%)]"
+          >
+            <ExternalLinkIcon className="size-3.5" aria-hidden />
+            Open secure {pendingApproval.appName ?? "app"} connection
+          </a>
+        ) : null}
+
+        {isLogin ? (
+          <p className="font-sans text-[13px] leading-relaxed text-sh-text-muted">
+            The live browser is unlocked. Sign in there — never paste a password
+            in this chat.
+          </p>
+        ) : null}
 
         <p className="font-sans text-[13px] leading-snug text-sh-text">
           {pendingApproval.question}
         </p>
 
-        <div className="rounded-lg border border-sh-border/70 bg-sh-bg/60 px-2.5 py-2">
-          <p
-            className={cn(
-              "font-mono text-[11px] leading-relaxed text-sh-text-muted",
-              !expandedContext && "line-clamp-3",
-            )}
-          >
-            {pendingApproval.context}
-          </p>
-          {pendingApproval.context.length > 140 ? (
-            <button
-              type="button"
-              className="mt-1.5 font-mono text-[10px] text-sh-accent-link transition-opacity hover:opacity-80"
-              onClick={() => setExpandedContext((v) => !v)}
+        {pendingApproval.context ? (
+          <div className="rounded-lg bg-sh-bg/70 px-2.5 py-2">
+            <p
+              className={cn(
+                "font-sans text-[12px] leading-relaxed text-sh-text-muted",
+                !expandedContext && "line-clamp-3",
+              )}
             >
-              {expandedContext ? "Show less" : "Show more"}
-            </button>
-          ) : null}
-        </div>
+              {pendingApproval.context}
+            </p>
+            {pendingApproval.context.length > 140 ? (
+              <button
+                type="button"
+                className="mt-1.5 font-sans text-[12px] text-sh-steer hover:underline"
+                onClick={() => setExpandedContext((v) => !v)}
+              >
+                {expandedContext ? "Show less" : "Show more"}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
 
         {timedOut ? (
           <div className="flex flex-col gap-2">
-            <p className="font-mono text-xs text-(--sh-error)" role="alert">
-              Approval window expired — stop the task or start a new one.
+            <p className="font-sans text-[13px] text-sh-error" role="alert">
+              This review expired — stop the job or start a new one.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="destructive"
-                size="xs"
-                className="rounded-full font-mono"
+                size="sm"
                 onClick={stopTask}
               >
-                Stop task
+                Stop job
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                size="xs"
-                className="rounded-full font-mono"
+                size="sm"
                 onClick={reset}
               >
-                New task
+                New job
               </Button>
             </div>
           </div>
@@ -180,26 +231,23 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
             <Textarea
               value={modifyAnswer}
               onChange={(e) => setModifyAnswer(e.target.value)}
-              aria-label="Modification instructions for the agent"
-              className="min-h-16 rounded-lg border-sh-border bg-sh-bg font-mono text-xs shadow-none"
-              placeholder="Describe what the agent should do differently…"
-              autoFocus
+              aria-label="What the agent should do instead"
+              className="min-h-16 rounded-lg border-sh-border bg-sh-bg font-sans text-[13px] shadow-none"
+              placeholder="Describe what it should do instead…"
             />
             <div className="flex gap-2">
               <Button
                 type="button"
-                size="xs"
-                className="rounded-full font-mono active:scale-[0.97]"
+                size="sm"
                 disabled={!modifyAnswer.trim()}
                 onClick={handleModifySubmit}
               >
-                Send modification
+                Send change
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                size="xs"
-                className="rounded-full font-mono"
+                size="sm"
                 onClick={() => setShowModify(false)}
               >
                 Cancel
@@ -211,34 +259,31 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
             <Button
               type="button"
               size="sm"
-              className="rounded-full bg-sh-text font-mono text-sh-bg hover:bg-sh-text/90 active:scale-[0.97]"
               disabled={timedOut}
               onClick={handleApprove}
             >
               <CheckIcon data-icon="inline-start" className="size-3.5" />
-              Approve
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              className="rounded-full font-mono active:scale-[0.97]"
-              disabled={timedOut}
-              onClick={handleReject}
-            >
-              <XIcon data-icon="inline-start" className="size-3.5" />
-              Reject
+              {approveLabel}
             </Button>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="rounded-full border-sh-border bg-transparent font-mono active:scale-[0.97]"
+              disabled={timedOut}
+              onClick={handleReject}
+            >
+              <XIcon data-icon="inline-start" className="size-3.5" />
+              {rejectLabel}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               disabled={timedOut}
               onClick={() => setShowModify(true)}
             >
               <PencilIcon data-icon="inline-start" className="size-3.5" />
-              Modify
+              Change this
             </Button>
           </div>
         )}

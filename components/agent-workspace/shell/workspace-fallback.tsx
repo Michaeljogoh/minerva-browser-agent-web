@@ -22,7 +22,7 @@ export function WorkspaceFallback({
     <div className="flex min-h-svh flex-col items-center justify-center bg-sh-bg px-6 py-16 text-center">
       <div className="w-full max-w-md space-y-4 rounded-lg border border-sh-border bg-sh-surface p-8">
         <p className="font-mono text-xs uppercase tracking-wider text-sh-text-muted">
-          Minerva Agent
+          Browser Agents
         </p>
         <h1 className="text-xl font-semibold text-sh-text">{title}</h1>
         <p className="text-sm leading-relaxed text-sh-text-muted">

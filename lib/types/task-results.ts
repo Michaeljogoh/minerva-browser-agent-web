@@ -5,6 +5,7 @@ export type Confidence = "high" | "medium" | "low"
 export type TaskType =
   | "month_end_exception"
   | "tax_code_delta"
+  | "commerce_reconciliation"
   | "bank_rec_diff"
   | "receipt_chase"
 
@@ -31,6 +32,8 @@ export interface TaxCodeDeltaBriefResult {
     rationale: string
     estimatedSavingsUsd?: number
   }
+  recommendedActions?: string[]
+  sourcesChecked?: string[]
   confidence: Confidence
 }
 
@@ -51,12 +54,49 @@ export interface MonthEndExceptionReport {
     confidence: Confidence
   }>
   taxBrief?: TaxCodeDeltaBriefResult
+  closeStatus?: "ready" | "blocked" | "needs_review"
+  blockers?: string[]
+  missingDocuments?: string[]
+  checklist?: string[]
   totals: {
     exceptionCount: number
     approvedCount: number
     rejectedCount: number
     taxFlagCount: number
   }
+}
+
+export interface CommerceReconciliationResult {
+  clientName: string
+  period: string
+  connectedSources: string[]
+  rows: Array<{
+    id: string
+    source: "shopify" | "stripe" | "bank" | "other"
+    orderId?: string
+    payoutId?: string
+    description: string
+    saleDate?: string
+    payoutDate?: string
+    grossUsd?: number
+    taxUsd?: number
+    refundUsd?: number
+    feeUsd?: number
+    netUsd: number
+    status: "matched" | "mismatch" | "missing_payout" | "needs_review" | "approved"
+    exceptionReason?: string
+    confidence: Confidence
+  }>
+  totals: {
+    grossUsd: number
+    taxUsd: number
+    refundUsd: number
+    feeUsd: number
+    netUsd: number
+    matchedCount: number
+    exceptionCount: number
+  }
+  nextActions: string[]
 }
 
 export interface BankRecDiffResult {
@@ -104,6 +144,7 @@ export interface ReceiptChaseResult {
 export type TaskExtractedData =
   | MonthEndExceptionReport
   | TaxCodeDeltaBriefResult
+  | CommerceReconciliationResult
   | BankRecDiffResult
   | ReceiptChaseResult
 

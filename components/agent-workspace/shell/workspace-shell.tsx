@@ -9,6 +9,7 @@ import {
 } from "@/components/agent-workspace/rail/agent-rail"
 import { BrowserStage } from "@/components/agent-workspace/stage/browser-stage"
 import { TaskSidebar } from "@/components/agent-workspace/sidebar/task-sidebar"
+import { TaskProgressBar } from "@/components/agent-workspace/shell/task-progress-bar"
 import { WorkspaceHeader } from "@/components/agent-workspace/shell/workspace-header"
 import { useAgentRail } from "@/hooks/use-agent-rail"
 import { useAgentSocket } from "@/hooks/use-agent-socket"
@@ -64,12 +65,12 @@ export function WorkspaceShell({
 
   return (
     <div
-      aria-label="Minerva Agent Workspace"
+      aria-label="Browser Agents Workspace"
       className="flex h-svh min-h-svh flex-col bg-sh-bg"
       style={
         {
           "--sidebar-width": "380px",
-          "--header-height": "40px",
+          "--header-height": "44px",
           "--agent-rail-width": "280px",
         } as React.CSSProperties
       }
@@ -85,6 +86,7 @@ export function WorkspaceShell({
         taskRailOpen={taskRailOpen}
         onTaskRailToggle={toggleTaskRail}
       />
+      <TaskProgressBar />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <AgentRail
           open={agentRailOpen}

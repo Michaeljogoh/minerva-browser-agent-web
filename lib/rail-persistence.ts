@@ -22,30 +22,30 @@ export function parseTaskRailCookie(value: string | undefined): boolean {
   return parseRailCookie(value, true)
 }
 
-export function readAgentRailCookie(): boolean {
+function readCookieValue(name: string): string | undefined {
   if (typeof document === "undefined") {
-    return false
+    return undefined
   }
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${AGENT_RAIL_COOKIE_NAME}=([^;]*)`),
-  )
-  return parseAgentRailCookie(match?.[1])
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+  return match?.[1]
+}
+
+function writeRailCookie(name: string, open: boolean): void {
+  document.cookie = `${name}=${open}; path=/; max-age=${RAIL_COOKIE_MAX_AGE}`
+}
+
+export function readAgentRailCookie(): boolean {
+  return parseAgentRailCookie(readCookieValue(AGENT_RAIL_COOKIE_NAME))
 }
 
 export function readTaskRailCookie(): boolean {
-  if (typeof document === "undefined") {
-    return true
-  }
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${TASK_RAIL_COOKIE_NAME}=([^;]*)`),
-  )
-  return parseTaskRailCookie(match?.[1])
+  return parseTaskRailCookie(readCookieValue(TASK_RAIL_COOKIE_NAME))
 }
 
 export function writeAgentRailCookie(open: boolean): void {
-  document.cookie = `${AGENT_RAIL_COOKIE_NAME}=${open}; path=/; max-age=${RAIL_COOKIE_MAX_AGE}`
+  writeRailCookie(AGENT_RAIL_COOKIE_NAME, open)
 }
 
 export function writeTaskRailCookie(open: boolean): void {
-  document.cookie = `${TASK_RAIL_COOKIE_NAME}=${open}; path=/; max-age=${RAIL_COOKIE_MAX_AGE}`
+  writeRailCookie(TASK_RAIL_COOKIE_NAME, open)
 }

@@ -25,6 +25,7 @@ export type ClientOutboundEvent =
   | { event: "resume_task"; payload: Record<string, never> }
   | { event: "inject_guidance"; payload: InjectGuidancePayload }
   | { event: "approve_action"; payload: ApproveActionPayload }
+  | { event: "refresh_live_view"; payload: Record<string, never> }
 
 /** Server → client */
 
@@ -32,6 +33,8 @@ export interface BrowserReadyPayload {
   liveUrl: string
   sessionId: string
 }
+
+export type LiveViewPayload = BrowserReadyPayload
 
 export interface AgentReasoningPayload {
   timestamp: number
@@ -61,6 +64,9 @@ export interface HumanApprovalRequiredPayload {
   approvalId: string
   question: string
   context: string
+  kind?: "approval" | "login" | "connect"
+  connectUrl?: string
+  appName?: string
 }
 
 export interface AgentErrorPayload {
@@ -91,6 +97,7 @@ export interface TaskStoppedPayload {
 
 export type ServerInboundEventName =
   | "browser_ready"
+  | "live_view"
   | "agent_reasoning"
   | "agent_action"
   | "agent_observation"
@@ -105,6 +112,7 @@ export type ServerInboundEventName =
 /** All server → client events (backend-prd.md §12). */
 export const SERVER_INBOUND_EVENTS = [
   "browser_ready",
+  "live_view",
   "agent_reasoning",
   "agent_action",
   "agent_observation",
@@ -129,13 +137,20 @@ function isString(value: unknown): value is string {
   return typeof value === "string"
 }
 
+function asOptionalBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined
+}
+
 export function parseBrowserReadyPayload(
   payload: unknown,
 ): BrowserReadyPayload | null {
   if (!isRecord(payload)) return null
-  if (!isString(payload.liveUrl) || !isString(payload.sessionId)) return null
-  return { liveUrl: payload.liveUrl, sessionId: payload.sessionId }
+  if (!isString(payload.sessionId)) return null
+  const liveUrl = isString(payload.liveUrl) ? payload.liveUrl : ""
+  return { liveUrl, sessionId: payload.sessionId }
 }
+
+export const parseLiveViewPayload = parseBrowserReadyPayload
 
 export function parseAgentReasoningPayload(
   payload: unknown,
@@ -207,6 +222,12 @@ export function parseHumanApprovalRequiredPayload(
     approvalId: payload.approvalId,
     question: payload.question,
     context: payload.context,
+    kind:
+      payload.kind === "login" || payload.kind === "connect"
+        ? payload.kind
+        : "approval",
+    connectUrl: isString(payload.connectUrl) ? payload.connectUrl : undefined,
+    appName: isString(payload.appName) ? payload.appName : undefined,
   }
 }
 
@@ -218,9 +239,8 @@ export function parseAgentErrorPayload(
   return {
     timestamp: payload.timestamp,
     error: payload.error,
-    recoverable:
-      typeof payload.recoverable === "boolean" ? payload.recoverable : undefined,
-    fatal: typeof payload.fatal === "boolean" ? payload.fatal : undefined,
+    recoverable: asOptionalBoolean(payload.recoverable),
+    fatal: asOptionalBoolean(payload.fatal),
   }
 }
 

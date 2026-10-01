@@ -28,7 +28,7 @@ export function ThemeToggle() {
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="rounded-none text-sh-text"
+            className="rounded-full text-sh-text"
             aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             onClick={() => setTheme(isDark ? "light" : "dark")}
           >
@@ -47,7 +47,7 @@ export function ThemeToggle() {
       <TooltipContent
         side="bottom"
         showArrow={false}
-        className="rounded-none border border-sh-border bg-sh-surface px-2.5 py-1.5 font-sans text-xs text-sh-text shadow-none"
+        className="rounded-lg border border-sh-border bg-sh-surface-raised px-2.5 py-1.5 font-sans text-xs text-sh-text"
       >
         {isDark ? "Light mode" : "Dark mode"}
       </TooltipContent>

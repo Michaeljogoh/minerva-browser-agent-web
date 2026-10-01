@@ -2,23 +2,23 @@
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { HistoryIcon } from "lucide-react"
+import { ActivityIcon } from "lucide-react"
 
-type SessionsRailTriggerProps = {
+type ActivityRailTriggerProps = {
   active: boolean
   onToggle: () => void
 }
 
-export function SessionsRailTrigger({
+export function ActivityRailTrigger({
   active,
   onToggle,
-}: SessionsRailTriggerProps) {
+}: ActivityRailTriggerProps) {
   return (
     <Button
       type="button"
       variant={active ? "default" : "secondary"}
       size="xs"
-      aria-label={active ? "Hide past jobs" : "Show past jobs"}
+      aria-label={active ? "Hide activity" : "Show activity"}
       aria-pressed={active}
       className={cn(
         "gap-1.5 font-sans text-[12px] font-semibold",
@@ -26,8 +26,8 @@ export function SessionsRailTrigger({
       )}
       onClick={onToggle}
     >
-      <HistoryIcon className="size-3.5 shrink-0" />
-      Past jobs
+      <ActivityIcon className="size-3.5 shrink-0" />
+      Activity
     </Button>
   )
 }

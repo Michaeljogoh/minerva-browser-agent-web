@@ -1,67 +1,53 @@
 "use client"
 
 import type { ReasoningStep } from "@/lib/types/agent"
+import { humanStepLabel } from "@/lib/step-copy"
 import { cn } from "@/lib/utils"
 
 type TypeVisual = {
   label: string
-  /** Timeline node styles */
   node: string
-  /** Header label styles — filled badge vs plain text */
   labelClass: string
   filledLabel: boolean
 }
 
 const typeVisual: Record<ReasoningStep["type"], TypeVisual> = {
   action: {
-    label: "Action",
-    node: "size-2.5 bg-[#3B82F6]",
-    labelClass: "text-[#3B82F6]",
+    label: "Did",
+    node: "size-2.5 bg-sh-steer",
+    labelClass: "text-sh-steer",
     filledLabel: false,
   },
   observation: {
-    label: "Observation",
+    label: "Looked",
     node: "size-2.5 bg-sh-accent-green",
     labelClass: "text-sh-accent-green",
     filledLabel: false,
   },
   reasoning: {
-    label: "Reasoning",
+    label: "Thought",
     node: "size-2 border-[1.5px] border-sh-text-muted bg-transparent",
     labelClass: "text-sh-text-muted",
     filledLabel: false,
   },
   error: {
-    label: "Error",
-    node: "size-2.5 bg-(--sh-error)",
-    labelClass: "bg-(--sh-error) text-white",
+    label: "Problem",
+    node: "size-2.5 bg-sh-error",
+    labelClass: "bg-sh-error text-white",
     filledLabel: true,
   },
   approval: {
-    label: "Approval",
-    node: "size-2.5 bg-(--sh-warning)",
-    labelClass: "bg-(--sh-warning) text-sh-bg",
+    label: "Needs you",
+    node: "size-2.5 bg-sh-warning",
+    labelClass: "bg-sh-warning-fill text-sh-warning",
     filledLabel: true,
   },
   screenshot: {
-    label: "Screenshot",
-    node: "size-2.5 bg-[#8B5CF6]",
-    labelClass: "text-[#8B5CF6]",
+    label: "Checked",
+    node: "size-2.5 bg-sh-text-muted",
+    labelClass: "text-sh-text-muted",
     filledLabel: false,
   },
-}
-
-function stepHeadline(step: ReasoningStep): string {
-  switch (step.type) {
-    case "action":
-      return step.tool ? step.tool : step.content
-    case "observation":
-      return step.tool ?? step.content
-    case "screenshot":
-      return "Page screenshot captured"
-    default:
-      return step.content
-  }
 }
 
 type DecisionCardProps = {
@@ -71,19 +57,12 @@ type DecisionCardProps = {
 
 export function DecisionCard({ step, className }: DecisionCardProps) {
   const visual = typeVisual[step.type]
-  const headline = stepHeadline(step)
+  const headline = humanStepLabel(step)
   const durationMs = step.metadata?.executionTimeMs
   const observationFailed =
     step.type === "observation" && step.metadata?.confidence === 0
-  const observationStatus = observationFailed ? "Failed:" : "Success:"
-  const observationStatusClass = observationFailed
-    ? "text-(--sh-error)"
-    : "text-sh-accent-green"
 
-  const ariaLine =
-    step.type === "observation"
-      ? `${observationStatus} ${headline}`
-      : headline
+  const ariaLine = observationFailed ? `Couldn’t finish: ${headline}` : headline
 
   return (
     <article
@@ -99,19 +78,18 @@ export function DecisionCard({ step, className }: DecisionCardProps) {
       />
       <div
         className={cn(
-          "rounded-lg border border-sh-border bg-sh-surface px-3.5 py-3 font-mono",
+          "rounded-xl border border-sh-border bg-sh-surface-raised px-3.5 py-3",
           "transition-[border-color,background-color] duration-150 ease-out",
-          step.type === "error" && "border-(--sh-error)/25 bg-(--sh-error)/5",
-          step.type === "approval" &&
-            "border-(--sh-warning)/30 bg-(--sh-warning)/5",
+          step.type === "error" && "border-sh-error/25 bg-sh-error/5",
+          step.type === "approval" && "border-sh-warning/30 bg-sh-warning-fill/80",
         )}
       >
         <div className="flex items-start justify-between gap-2">
           <span
             className={cn(
-              "font-mono text-[10px] font-semibold tracking-wide uppercase",
+              "font-sans text-[11px] font-medium tracking-wide",
               visual.filledLabel
-                ? "inline-flex items-center rounded-md px-2 py-0.5"
+                ? "inline-flex items-center rounded-full px-2 py-0.5"
                 : "pt-0.5",
               visual.labelClass,
             )}
@@ -120,42 +98,33 @@ export function DecisionCard({ step, className }: DecisionCardProps) {
           </span>
           <time
             dateTime={new Date(step.timestamp).toISOString()}
-            className="shrink-0 pt-0.5 font-mono text-[10px] tabular-nums text-sh-text-muted"
+            className="shrink-0 pt-0.5 font-sans text-[11px] tabular-nums text-sh-text-muted"
           >
-            {new Date(step.timestamp).toLocaleTimeString()}
+            {new Date(step.timestamp).toLocaleTimeString(undefined, {
+              hour: "numeric",
+              minute: "2-digit",
+            })}
           </time>
         </div>
 
-        {step.type === "observation" ? (
-          <p className="mt-2 text-[13px] leading-snug">
-            <span className={cn("font-medium", observationStatusClass)}>
-              {observationStatus}
-            </span>{" "}
-            <span className="text-sh-text-muted">{headline}</span>
-          </p>
-        ) : (
-          <p
-            className={cn(
-              "mt-2 text-[13px] leading-snug text-sh-text",
-              step.type === "action" && "text-[15px] font-semibold tracking-tight",
-            )}
-          >
-            {headline}
-          </p>
-        )}
+        <p className="mt-2 font-sans text-[13px] leading-snug text-sh-text">
+          {observationFailed ? `Couldn’t finish: ${headline}` : headline}
+        </p>
 
         {step.type === "screenshot" && step.screenshotUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={step.screenshotUrl}
             alt="Page screenshot"
-            className="mt-2.5 max-h-28 w-full rounded-md border border-sh-border object-cover object-top"
+            width={640}
+            height={200}
+            className="mt-2.5 max-h-28 w-full rounded-lg border border-sh-border object-cover object-top"
           />
         ) : null}
 
         {durationMs != null ? (
-          <p className="mt-2 font-mono text-[10px] text-sh-text-muted">
-            {durationMs}ms
+          <p className="mt-2 font-sans text-[11px] tabular-nums text-sh-text-muted">
+            {(durationMs / 1000).toFixed(1)}s
           </p>
         ) : null}
       </div>

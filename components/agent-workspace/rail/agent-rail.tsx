@@ -19,18 +19,14 @@ import * as React from "react"
 
 export type LeftRailMode = "agent" | "sessions"
 
-type Filter = "all" | "actions" | "errors"
+type Filter = "all" | "needs_you" | "problems"
 
 function matchesFilter(stepType: ReasoningStepType, filter: Filter): boolean {
   if (filter === "all") {
     return true
   }
-  if (filter === "actions") {
-    return (
-      stepType === "action" ||
-      stepType === "observation" ||
-      stepType === "reasoning"
-    )
+  if (filter === "needs_you") {
+    return stepType === "approval"
   }
   return stepType === "error"
 }
@@ -62,22 +58,28 @@ function AgentTimelineContent({
       <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-sh-border px-3">
         <div className="flex min-w-0 items-center gap-1">
           <AgentRailTrigger open onToggle={onToggle} />
-          <p className="font-mono text-[11px] uppercase tracking-wide text-sh-text-muted">
-            Agent
+          <p className="font-sans text-[13px] font-medium text-sh-text">
+            Activity
           </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-sh-surface px-2 py-0.5 font-mono text-[10px] tabular-nums text-sh-text-muted ring-1 ring-sh-border">
-          Step {currentStep}
+        <span className="inline-flex items-center rounded-full bg-sh-surface px-2 py-0.5 font-sans text-[11px] tabular-nums text-sh-text-muted">
+          {currentStep > 0 ? `Move ${currentStep}` : "Waiting"}
         </span>
       </div>
 
       <div className="shrink-0 border-b border-sh-border p-2.5">
         <div
           role="tablist"
-          aria-label="Filter agent steps"
+          aria-label="Filter activity"
           className="flex gap-0.5 rounded-full bg-sh-surface p-0.5 ring-1 ring-sh-border"
         >
-          {(["all", "actions", "errors"] as const).map((value) => {
+          {(
+            [
+              ["all", "All"],
+              ["needs_you", "Needs you"],
+              ["problems", "Problems"],
+            ] as const
+          ).map(([value, label]) => {
             const active = filter === value
             return (
               <button
@@ -86,16 +88,16 @@ function AgentTimelineContent({
                 role="tab"
                 aria-selected={active}
                 className={cn(
-                  "flex-1 rounded-full px-2.5 py-1.5 font-mono text-[10px] capitalize",
+                  "flex-1 rounded-full px-2.5 py-1.5 font-sans text-[11px] font-semibold",
                   "transition-[background-color,color,transform] duration-150 ease-out",
-                  "active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sh-accent-green/50",
+                  "active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-sh-steer/40",
                   active
-                    ? "bg-sh-text text-sh-bg dark:bg-sh-accent-green dark:text-white"
+                    ? "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]"
                     : "text-sh-text-muted hover:text-sh-text",
                 )}
                 onClick={() => setFilter(value)}
               >
-                {value}
+                {label}
               </button>
             )
           })}
@@ -103,14 +105,14 @@ function AgentTimelineContent({
       </div>
 
       {!isConnected && steps.length > 0 ? (
-        <p className="border-b border-sh-border px-3 py-1.5 font-mono text-[10px] text-sh-text-muted">
-          Timeline read-only — reconnect to send controls
+        <p className="border-b border-sh-border px-3 py-1.5 font-sans text-[12px] text-sh-text-muted">
+          Timeline is read-only until we reconnect
         </p>
       ) : null}
 
       {replayActive ? (
-        <p className="border-b border-sh-border bg-sh-surface px-3 py-1.5 font-mono text-[10px] text-sh-accent-green">
-          Replaying timeline · step {replayVisibleSteps} / {steps.length}
+        <p className="border-b border-sh-border bg-sh-surface px-3 py-1.5 font-sans text-[12px] text-sh-steer">
+          Replaying · move {replayVisibleSteps} of {steps.length}
         </p>
       ) : null}
 
@@ -131,14 +133,13 @@ function AgentTimelineContent({
             {filtered.length === 0 ? (
               <li className="flex min-h-40 flex-col items-center justify-center px-4 text-center">
                 <span className="mb-2 inline-flex size-8 items-center justify-center rounded-full bg-sh-surface ring-1 ring-sh-border">
-                  <span className="size-1.5 rounded-full bg-sh-accent-green" />
+                  <span className="size-1.5 rounded-full bg-sh-steer" />
                 </span>
-                <p className="font-sans text-xs text-sh-text">
-                  Waiting for the first step
+                <p className="font-sans text-[13px] text-sh-text">
+                  Waiting for the first move
                 </p>
-                <p className="mt-1 max-w-48 font-mono text-[10px] leading-relaxed text-sh-text-muted">
-                  Actions, observations, and screenshots will stream here as the
-                  agent runs.
+                <p className="mt-1 max-w-48 font-sans text-[12px] leading-relaxed text-sh-text-muted">
+                  You’ll see each visit and click here in plain language.
                 </p>
               </li>
             ) : (
@@ -155,7 +156,7 @@ function AgentTimelineContent({
           <Button
             type="button"
             size="xs"
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-sh-text px-3 font-mono text-[10px] text-sh-bg shadow-sm transition-transform duration-150 ease-out active:scale-[0.97] hover:bg-sh-text/90 dark:bg-sh-accent-green dark:text-white dark:hover:bg-sh-accent-green"
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 font-sans text-[12px] text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[color-mix(in_srgb,var(--primary),#000_8%)] active:scale-[0.97] dark:hover:bg-[color-mix(in_srgb,var(--primary),#fff_12%)]"
             onClick={scrollToBottom}
           >
             New messages
@@ -182,7 +183,7 @@ export function AgentRail({
   onSessionActivated,
 }: AgentRailProps) {
   const isMobile = useIsMobile()
-  const title = mode === "sessions" ? "Sessions" : "Agent timeline"
+  const title = mode === "sessions" ? "Past jobs" : "Activity"
 
   const body =
     mode === "sessions" ? (
