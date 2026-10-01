@@ -26,8 +26,8 @@ export function AgentRailTrigger({ open, onToggle }: AgentRailTriggerProps) {
             type="button"
             variant="ghost"
             size="icon-sm"
-            className={cn("rounded-none text-sh-text cursor-pointer", open && "bg-sh-surface")}
-            aria-label={open ? "Hide agent panel" : "Show agent panel"}
+            className={cn("rounded-full text-sh-text cursor-pointer", open && "bg-sh-surface")}
+            aria-label={open ? "Hide activity panel" : "Show activity panel"}
             aria-pressed={open}
             onClick={onToggle}
           >
@@ -40,7 +40,7 @@ export function AgentRailTrigger({ open, onToggle }: AgentRailTriggerProps) {
         showArrow={false}
         className="rounded-none border border-sh-border bg-sh-surface px-2.5 py-1.5 font-sans text-xs text-sh-text shadow-none"
       >
-        Toggle Agent ({shortcut})
+        Toggle activity ({shortcut})
       </TooltipContent>
     </Tooltip>
   )

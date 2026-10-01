@@ -2,14 +2,22 @@ import { create } from "zustand"
 
 import {
   APPROVAL_TTL_MS,
+  isSessionActive,
   type AgentStore,
+  type AgentStoreState,
   type ReasoningStep,
 } from "@/lib/types/agent"
 import {
   connectAgentSocket,
   disconnectAgentSocket,
 } from "@/lib/socket"
-import type { AgentStoreState } from "@/lib/types/agent"
+import { agentErrorToastCopy, taskCompleteToastCopy } from "@/lib/toast-copy"
+import { gooeyToast } from "@/components/ui/goey-toaster"
+import {
+  mergeTaskProgress,
+  targetProgressForStepCount,
+  TASK_PROGRESS,
+} from "@/lib/task-progress"
 import {
   parseAgentActionPayload,
   parseAgentErrorPayload,
@@ -17,44 +25,44 @@ import {
   parseAgentReasoningPayload,
   parseBrowserReadyPayload,
   parseHumanApprovalRequiredPayload,
+  parseLiveViewPayload,
   parseScreenshotPayload,
   parseTaskCompletePayload,
   parseTaskPausedPayload,
   parseTaskResumedPayload,
   parseTaskStoppedPayload,
+  SERVER_INBOUND_EVENTS,
 } from "@/lib/types/events"
 
-const RUN_SESSION_EVENTS = new Set([
-  "browser_ready",
-  "agent_reasoning",
-  "agent_action",
-  "agent_observation",
-  "screenshot",
-  "human_approval_required",
-  "task_paused",
-  "task_resumed",
-  "agent_error",
-  "task_complete",
-])
+/** Events ignored after stop (activeRunId === 0). task_stopped still clears state. */
+const RUN_SESSION_EVENTS = new Set<string>(
+  SERVER_INBOUND_EVENTS.filter((event) => event !== "task_stopped"),
+)
 
-function stoppedSessionPatch(): Pick<
+export function stoppedSessionPatch(): Pick<
   AgentStoreState,
   | "activeRunId"
   | "status"
   | "pendingApproval"
   | "liveUrl"
+  | "liveViewKey"
+  | "liveViewDisconnected"
   | "sessionId"
   | "latestScreenshotUrl"
   | "currentStep"
   | "reasoningSteps"
   | "replayActive"
   | "replayVisibleSteps"
+  | "taskProgress"
 > {
   return {
     activeRunId: 0,
     status: "idle",
+    taskProgress: 0,
     pendingApproval: null,
     liveUrl: null,
+    liveViewKey: 0,
+    liveViewDisconnected: false,
     sessionId: null,
     latestScreenshotUrl: null,
     currentStep: 0,
@@ -79,13 +87,34 @@ function appendStep(
 }
 
 function withAppendedStep(
-  state: { currentStep: number; reasoningSteps: ReasoningStep[] },
+  state: {
+    currentStep: number
+    reasoningSteps: ReasoningStep[]
+    taskProgress: number
+  },
   step: Omit<ReasoningStep, "id">,
-): Pick<AgentStore, "currentStep" | "reasoningSteps"> {
+): Pick<AgentStore, "currentStep" | "reasoningSteps" | "taskProgress"> {
+  const currentStep = state.currentStep + 1
   return {
-    currentStep: state.currentStep + 1,
+    currentStep,
     reasoningSteps: appendStep(state.reasoningSteps, step),
+    taskProgress: mergeTaskProgress(
+      state.taskProgress,
+      targetProgressForStepCount(currentStep),
+    ),
   }
+}
+
+function latestScreenshotUrl(
+  steps: ReasoningStep[],
+  limit = steps.length,
+): string | null {
+  const end = Math.min(limit, steps.length)
+  for (let i = end - 1; i >= 0; i -= 1) {
+    const url = steps[i]?.screenshotUrl
+    if (url) return url
+  }
+  return null
 }
 
 const initialState = {
@@ -94,6 +123,8 @@ const initialState = {
   connectionPhase: "disconnected" as const,
   sessionId: null,
   liveUrl: null,
+  liveViewKey: 0,
+  liveViewDisconnected: false,
   status: "idle" as const,
   goal: "",
   submittedGoal: "",
@@ -110,6 +141,7 @@ const initialState = {
   replayActive: false,
   replayVisibleSteps: 0,
   activeRunId: 0,
+  taskProgress: 0,
 }
 
 export const useAgentStore = create<AgentStore>((set, get) => ({
@@ -129,27 +161,21 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   setTaskType: (taskType) => set({ taskType }),
 
   startTask: () => {
-    const { goal, taskType, socket, isConnected } = get()
+    const { goal, taskType, socket, isConnected, activeRunId } = get()
     const trimmedGoal = goal.trim()
     if (!trimmedGoal) return
     if (!socket || !isConnected) return
 
     set({
-      activeRunId: get().activeRunId + 1,
+      ...stoppedSessionPatch(),
+      activeRunId: activeRunId + 1,
       submittedGoal: trimmedGoal,
       goal: "",
       status: "connecting",
-      sessionId: null,
-      liveUrl: null,
-      currentStep: 0,
-      reasoningSteps: [],
-      pendingApproval: null,
-      latestScreenshotUrl: null,
       viewMode: "live",
       result: null,
       error: null,
-      replayActive: false,
-      replayVisibleSteps: 0,
+      taskProgress: TASK_PROGRESS.START,
     })
 
     socket.emit("start_task", {
@@ -204,7 +230,20 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     set({
       pendingApproval: null,
       status: "running",
+      viewMode: "live",
     })
+  },
+
+  refreshLiveView: () => {
+    const { socket, sessionId, status } = get()
+    if (!socket?.connected || !sessionId) return
+    if (!isSessionActive(status)) return
+    socket.emit("refresh_live_view", {})
+  },
+
+  markLiveViewDisconnected: () => {
+    if (get().liveViewDisconnected) return
+    set({ liveViewDisconnected: true })
   },
 
   handleServerEvent: (event, payload) => {
@@ -216,12 +255,30 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       case "browser_ready": {
         const parsed = parseBrowserReadyPayload(payload)
         if (!parsed) return
-        set({
+        set((state) => ({
           liveUrl: parsed.liveUrl,
           sessionId: parsed.sessionId,
-          status: "running",
-          viewMode: "live",
-        })
+          status: "running" as const,
+          viewMode: "live" as const,
+          liveViewKey: state.liveViewKey + 1,
+          liveViewDisconnected: false,
+          taskProgress: mergeTaskProgress(
+            state.taskProgress,
+            TASK_PROGRESS.BROWSER_READY,
+          ),
+        }))
+        return
+      }
+
+      case "live_view": {
+        const parsed = parseLiveViewPayload(payload)
+        if (!parsed) return
+        set((state) => ({
+          liveUrl: parsed.liveUrl,
+          sessionId: parsed.sessionId,
+          liveViewKey: state.liveViewKey + 1,
+          liveViewDisconnected: false,
+        }))
         return
       }
 
@@ -260,9 +317,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           withAppendedStep(state, {
             timestamp: parsed.timestamp,
             type: "observation",
-            content: parsed.success
-              ? `${parsed.tool} succeeded`
-              : `${parsed.tool} failed`,
+            content: `${parsed.tool} ${parsed.success ? "succeeded" : "failed"}`,
             tool: parsed.tool,
             result: parsed.result,
             metadata: { confidence: parsed.success ? 1 : 0 },
@@ -300,10 +355,14 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           context: parsed.context,
           timestamp,
           timeoutAt: timestamp + APPROVAL_TTL_MS,
+          kind: parsed.kind,
+          connectUrl: parsed.connectUrl,
+          appName: parsed.appName,
         }
         set((state) => ({
           pendingApproval: approval,
           status: "approval_pending",
+          viewMode: parsed.kind === "login" ? ("live" as const) : state.viewMode,
           ...withAppendedStep(state, {
             timestamp,
             type: "approval",
@@ -336,20 +395,23 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           recoverable: parsed.recoverable,
           fatal: parsed.fatal,
         }
+        const toast = agentErrorToastCopy(parsed.error, {
+          fatal: parsed.fatal,
+          recoverable: parsed.recoverable,
+        })
+        gooeyToast.error(toast.title, { description: toast.description })
         set((state) => {
           const approvalRejected =
             parsed.error.includes("approvalId") ||
             parsed.error.includes("Unknown or expired approval")
+          const clearApproval = parsed.fatal || approvalRejected
           return {
             error: agentError,
-            status: parsed.fatal ? "error" : state.status,
-            pendingApproval:
-              parsed.fatal || approvalRejected ? null : state.pendingApproval,
-            ...withAppendedStep(state, {
-              timestamp: parsed.timestamp,
-              type: "error",
-              content: parsed.error,
-            }),
+            status:
+              parsed.fatal || state.status === "connecting"
+                ? "error"
+                : state.status,
+            pendingApproval: clearApproval ? null : state.pendingApproval,
           }
         })
         return
@@ -358,12 +420,21 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       case "task_complete": {
         const parsed = parseTaskCompletePayload(payload)
         if (!parsed) return
-        set({
+        const successToast = taskCompleteToastCopy(parsed.data)
+        gooeyToast.success(successToast.title, {
+          description: successToast.description,
+        })
+        set((state) => ({
           result: parsed.data,
           status: "complete",
           pendingApproval: null,
           taskType: parsed.data.taskType,
-        })
+          viewMode: "screenshot",
+          taskProgress: mergeTaskProgress(
+            state.taskProgress,
+            TASK_PROGRESS.DONE,
+          ),
+        }))
         return
       }
 
@@ -408,18 +479,20 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       return
     }
     const nextCount = replayVisibleSteps + 1
-    const latestScreenshot = [...reasoningSteps]
-      .slice(0, nextCount)
-      .reverse()
-      .find((step) => step.screenshotUrl)?.screenshotUrl
+    const screenshot = latestScreenshotUrl(reasoningSteps, nextCount)
 
     set({
       replayVisibleSteps: nextCount,
-      ...(latestScreenshot ? { latestScreenshotUrl: latestScreenshot } : {}),
+      ...(screenshot ? { latestScreenshotUrl: screenshot } : {}),
     })
   },
 
   loadSessionRecord: (record) => {
+    const screenshot = latestScreenshotUrl(record.steps)
+    if (record.status === "error" && record.error) {
+      const toast = agentErrorToastCopy(record.error, { fatal: true })
+      gooeyToast.error(toast.title, { description: toast.description })
+    }
     set({
       activeRunId: 0,
       goal: "",
@@ -439,15 +512,16 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         : null,
       liveUrl: null,
       sessionId: null,
+      liveViewDisconnected: false,
       pendingApproval: null,
       replayActive: false,
       replayVisibleSteps: record.steps.length,
-      viewMode: record.steps.some((step) => step.screenshotUrl)
-        ? "screenshot"
-        : "live",
-      latestScreenshotUrl:
-        [...record.steps].reverse().find((step) => step.screenshotUrl)
-          ?.screenshotUrl ?? null,
+      viewMode: screenshot ? "screenshot" : "live",
+      latestScreenshotUrl: screenshot,
+      taskProgress:
+        record.status === "complete"
+          ? TASK_PROGRESS.DONE
+          : mergeTaskProgress(0, targetProgressForStepCount(record.steps.length)),
     })
   },
 

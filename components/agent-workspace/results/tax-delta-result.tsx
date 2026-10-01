@@ -71,7 +71,7 @@ export function TaxDeltaResultView({
         className={cn(
           "border border-l-2 p-2",
           data.impact.affected
-            ? "border-l-sh-accent-green bg-sh-bg"
+            ? "border-l-sh-accent-green bg-sh-success-fill/50"
             : "border-l-sh-text-muted bg-sh-bg",
         )}
       >
@@ -90,6 +90,26 @@ export function TaxDeltaResultView({
           </p>
         ) : null}
       </div>
+
+      {data.recommendedActions && data.recommendedActions.length > 0 ? (
+        <div className="border border-sh-border bg-sh-bg px-2.5 py-2">
+          <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
+            Recommended next steps
+          </p>
+          <ul className="mt-1.5 list-inside list-disc space-y-0.5 font-sans text-xs text-sh-text">
+            {data.recommendedActions.map((action) => (
+              <li key={action}>{action}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
+        Confidence: {data.confidence}
+        {data.sourcesChecked && data.sourcesChecked.length > 0
+          ? ` · ${data.sourcesChecked.length} sources`
+          : ""}
+      </p>
     </div>
   )
 }

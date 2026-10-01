@@ -21,17 +21,17 @@ export function ConnectionBanner() {
   return (
     <div
       role="status"
-      className="flex shrink-0 items-center gap-2 border-b border-[var(--sh-warning)] bg-sh-surface px-3 py-1.5"
+      className="flex shrink-0 items-center gap-2 border-b border-sh-warning/40 bg-sh-warning-fill px-4 py-2"
     >
-      {showReconnecting ? <Spinner className="size-3 text-[var(--sh-warning)]" /> : null}
-      <p className="font-mono text-xs text-sh-text">
+      {showReconnecting ? <Spinner className="size-3.5 text-sh-warning" /> : null}
+      <p className="font-sans text-[13px] text-sh-text">
         {showReconnecting
-          ? "Connection lost — reconnecting to the agent server…"
-          : "Disconnected from the agent server. Timeline is read-only until reconnected."}
+          ? "Connection lost — reconnecting…"
+          : "Disconnected. You can still read the timeline until we’re back."}
       </p>
       {currentStep > 0 ? (
-        <span className="ml-auto font-mono text-[10px] text-sh-text-muted">
-          {currentStep} steps preserved
+        <span className="ml-auto font-sans text-[12px] text-sh-text-muted">
+          {currentStep} moves kept
         </span>
       ) : null}
     </div>

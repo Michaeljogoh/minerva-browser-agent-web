@@ -34,7 +34,7 @@ export function TaskRailTrigger({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className={cn("rounded-none text-sh-text", open && "bg-sh-surface")}
+            className={cn("rounded-full text-sh-text", open && "bg-sh-surface")}
             aria-label={open ? `Hide ${label.toLowerCase()} panel` : `Show ${label.toLowerCase()} panel`}
             aria-pressed={open}
             onClick={onToggle}

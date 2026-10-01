@@ -77,9 +77,40 @@ export function MonthEndResultView({ data }: MonthEndResultViewProps) {
 
   return (
     <div className="space-y-3">
-      <p className="font-mono text-[10px] text-sh-text-muted">
-        {data.clientName} · {data.period}
-      </p>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="font-mono text-[10px] text-sh-text-muted">
+          {data.clientName} · {data.period}
+        </p>
+        {data.closeStatus ? (
+          <StatusBadge status={data.closeStatus} />
+        ) : null}
+      </div>
+
+      {data.blockers && data.blockers.length > 0 ? (
+        <div className="border border-l-2 border-l-(--sh-warning) border-sh-border bg-sh-bg px-2.5 py-2">
+          <p className="font-mono text-[10px] uppercase tracking-wide text-(--sh-warning)">
+            Blockers
+          </p>
+          <ul className="mt-1 list-inside list-disc font-sans text-xs text-sh-text">
+            {data.blockers.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {data.missingDocuments && data.missingDocuments.length > 0 ? (
+        <div className="border border-sh-border bg-sh-bg px-2.5 py-2">
+          <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
+            Missing documents
+          </p>
+          <ul className="mt-1 list-inside list-disc font-sans text-xs text-sh-text">
+            {data.missingDocuments.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <Table>
         <TableHeader>
@@ -126,6 +157,19 @@ export function MonthEndResultView({ data }: MonthEndResultViewProps) {
         <span>Rejected: {data.totals.rejectedCount}</span>
         <span>Tax flags: {data.totals.taxFlagCount}</span>
       </div>
+
+      {data.checklist && data.checklist.length > 0 ? (
+        <div className="border border-sh-border bg-sh-bg px-2.5 py-2">
+          <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
+            Close checklist
+          </p>
+          <ul className="mt-1.5 list-inside list-disc space-y-0.5 font-sans text-xs text-sh-text">
+            {data.checklist.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {data.taxBrief ? (
         <Collapsible defaultOpen={false}>

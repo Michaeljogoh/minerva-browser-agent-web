@@ -1,16 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "../components/agent-workspace/styles/stagehand-tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-heading: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,6 +48,14 @@
   --color-sh-accent-green: var(--sh-accent-green);
   --color-sh-accent-green-ink: var(--sh-accent-green-ink);
   --color-sh-accent-link: var(--sh-accent-link);
+  --color-sh-steer: var(--sh-steer);
+  --color-sh-steer-fill: var(--sh-steer-fill);
+  --color-sh-warning: var(--sh-warning);
+  --color-sh-warning-fill: var(--sh-warning-fill);
+  --color-sh-success-fill: var(--sh-success-fill);
+  --color-sh-error: var(--sh-error);
+  --color-sh-primary: var(--sh-primary);
+  --color-sh-on-primary: var(--sh-on-primary);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -56,87 +63,199 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --ease-premium: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* ── Browser Agents tokens — Pinecone-inspired knowledge platform ──
+   Light: cool paper + deep ink + solid pine CTA
+   Dark: OLED charcoal + luminous pine — same roles, matched contrast
+*/
+
 :root {
+  --sidebar-width: 380px;
+  --agent-rail-width: 280px;
+  --header-height: 44px;
+
+  --sh-bg: #f6f8f7;
+  --sh-surface: #eef2f0;
+  --sh-surface-raised: #ffffff;
+  --sh-text: #0a0f0d;
+  --sh-text-muted: #5b6b64;
+  --sh-border: #dce4df;
+  /* Brand pine — solid CTAs (Pinecone-class) */
+  --sh-accent-green: #00a67e;
+  --sh-accent-green-ink: #008f6b;
+  --sh-on-primary: #ffffff;
+  --sh-accent-link: #00a67e;
+  /* Human / interactive chrome shares brand green for one system */
+  --sh-steer: #00a67e;
+  --sh-steer-fill: #e6f7f1;
+  --sh-primary: #00a67e;
+  --sh-error: #dc2626;
+  --sh-warning: #b45309;
+  --sh-warning-fill: #fff7ed;
+  --sh-success-fill: #e6f7f1;
+  --sh-grid: rgba(10, 15, 13, 0.045);
+
   --background: var(--sh-bg);
   --foreground: var(--sh-text);
-  --card: var(--sh-surface);
+  --card: var(--sh-surface-raised);
   --card-foreground: var(--sh-text);
-  --popover: var(--sh-surface);
+  --popover: var(--sh-surface-raised);
   --popover-foreground: var(--sh-text);
   --primary: var(--sh-primary);
-  --primary-foreground: #ffffff;
-  --secondary: var(--sh-surface-raised);
+  --primary-foreground: var(--sh-on-primary);
+  --secondary: var(--sh-surface);
   --secondary-foreground: var(--sh-text);
-  --muted: var(--sh-surface-raised);
+  --muted: var(--sh-surface);
   --muted-foreground: var(--sh-text-muted);
-  --accent: var(--sh-surface-raised);
-  --accent-foreground: var(--sh-text);
+  --accent: var(--sh-steer-fill);
+  --accent-foreground: var(--sh-accent-green-ink);
   --destructive: var(--sh-error);
   --border: var(--sh-border);
   --input: var(--sh-border);
   --ring: var(--sh-accent-green);
   --chart-1: var(--sh-accent-green);
-  --chart-2: var(--sh-accent-link);
+  --chart-2: #0a0f0d;
   --chart-3: var(--sh-text-muted);
-  --chart-4: var(--sh-surface-raised);
+  --chart-4: var(--sh-surface);
   --chart-5: var(--sh-border);
-  --radius: 0.125rem;
+  --radius: 0.75rem;
   --sidebar: var(--sh-bg);
   --sidebar-foreground: var(--sh-text);
-  --sidebar-primary: var(--sh-primary);
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: var(--sh-accent-green);
+  --sidebar-primary-foreground: var(--sh-on-primary);
   --sidebar-accent: var(--sh-surface);
   --sidebar-accent-foreground: var(--sh-text);
   --sidebar-border: var(--sh-border);
   --sidebar-ring: var(--sh-accent-green);
+  color-scheme: light;
 }
 
 .dark {
+  --sh-bg: #070a09;
+  --sh-surface: #101614;
+  --sh-surface-raised: #171e1b;
+  --sh-text: #f1f5f3;
+  --sh-text-muted: #8b9a93;
+  --sh-border: #24302b;
+  --sh-accent-green: #1ed9a8;
+  --sh-accent-green-ink: #1ed9a8;
+  --sh-on-primary: #04110c;
+  --sh-accent-link: #1ed9a8;
+  --sh-steer: #1ed9a8;
+  --sh-steer-fill: #0d2a22;
+  --sh-primary: #1ed9a8;
+  --sh-error: #f87171;
+  --sh-warning: #fbbf24;
+  --sh-warning-fill: #3a2a0a;
+  --sh-success-fill: #0d2a22;
+  --sh-grid: rgba(241, 245, 243, 0.04);
+
   --background: var(--sh-bg);
   --foreground: var(--sh-text);
   --card: var(--sh-surface);
   --card-foreground: var(--sh-text);
-  --popover: var(--sh-surface);
+  --popover: var(--sh-surface-raised);
   --popover-foreground: var(--sh-text);
   --primary: var(--sh-primary);
-  --primary-foreground: var(--sh-text);
+  --primary-foreground: var(--sh-on-primary);
   --secondary: var(--sh-surface-raised);
   --secondary-foreground: var(--sh-text);
   --muted: var(--sh-surface-raised);
   --muted-foreground: var(--sh-text-muted);
-  --accent: var(--sh-surface-raised);
-  --accent-foreground: var(--sh-text);
+  --accent: var(--sh-steer-fill);
+  --accent-foreground: var(--sh-accent-green);
   --destructive: var(--sh-error);
   --border: var(--sh-border);
   --input: var(--sh-border);
   --ring: var(--sh-accent-green);
   --chart-1: var(--sh-accent-green);
-  --chart-2: var(--sh-accent-link);
+  --chart-2: var(--sh-text);
   --chart-3: var(--sh-text-muted);
   --chart-4: var(--sh-surface-raised);
   --chart-5: var(--sh-border);
-  --radius: 0.125rem;
+  --radius: 0.75rem;
   --sidebar: var(--sh-bg);
   --sidebar-foreground: var(--sh-text);
-  --sidebar-primary: var(--sh-primary);
-  --sidebar-primary-foreground: var(--sh-text);
+  --sidebar-primary: var(--sh-accent-green);
+  --sidebar-primary-foreground: var(--sh-on-primary);
   --sidebar-accent: var(--sh-surface);
   --sidebar-accent-foreground: var(--sh-text);
   --sidebar-border: var(--sh-border);
   --sidebar-ring: var(--sh-accent-green);
+  color-scheme: dark;
+}
+
+@keyframes sh-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sh-dock-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sh-crossfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.motion-card-enter {
+  animation: sh-card-enter 160ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.motion-dock-enter {
+  animation: sh-dock-enter 180ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.motion-crossfade {
+  animation: sh-crossfade 200ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-card-enter,
+  .motion-dock-enter,
+  .motion-crossfade {
+    animation: none;
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    font-size: 14px;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+  }
+  body {
+    @apply bg-background font-sans font-medium text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--sh-accent-green) 28%, transparent);
+    color: var(--sh-text);
   }
 }
 

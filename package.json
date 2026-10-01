@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -21,6 +23,8 @@
     "cn": "^0.2.6",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^13.4.0",
+    "goey-toast": "^0.5.0",
     "input-otp": "^1.5.0",
     "lucide-react": "^1.43.0",
     "next": "16.3.4",
@@ -45,7 +49,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   },
   "packageManager": "pnpm@11.0.9"
 }

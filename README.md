@@ -1,6 +1,6 @@
-# Minerva Agent — Frontend
+# Browser Agents — Frontend
 
-Next.js **Agent Workspace** UI for [Minerva Browser Agent]. Streams agent reasoning over Socket.IO, shows the Browserbase live session, handles human approvals, and renders structured task results (Tax Delta / IRS.gov).
+Next.js **Agent Workspace** UI for Browser Agents. Streams agent reasoning over Socket.IO, shows the Steel live browser session, handles human approvals and live login, and renders structured task results for three accounting demos.
 
 ---
 
@@ -9,7 +9,7 @@ Next.js **Agent Workspace** UI for [Minerva Browser Agent]. Streams agent reason
 | Layer | Choice |
 |-------|--------|
 | Framework | Next.js 16 (App Router) |
-| Styling | Tailwind CSS v4 + shadcn/ui + Stagehand tokens |
+| Styling | Tailwind CSS v4 + shadcn/ui (tokens in `app/globals.css`) |
 | State | Zustand |
 | Real-time | `socket.io-client` → NestJS gateway on `:3001` |
 
@@ -19,17 +19,23 @@ Next.js **Agent Workspace** UI for [Minerva Browser Agent]. Streams agent reason
 
 ### 1. Environment
 
-Create `web/.env.local` (do not commit):
+Create `web/.env.local` from `.env.example` (do not commit):
+
+```bash
+cp .env.example .env.local
+```
 
 ```bash
 NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
 ```
 
-If the API has `GATEWAY_API_KEY` set, also add:
+If the API has `GATEWAY_API_KEY` set (required in production / Compose `api`), set the **same** value:
 
 ```bash
-NEXT_PUBLIC_GATEWAY_API_KEY=your-key-here
+NEXT_PUBLIC_GATEWAY_API_KEY=<same-as-api-GATEWAY_API_KEY>
 ```
+
+Do not use the literal `your-key-here` — the client treats that as unset.
 
 Ensure the API `FRONTEND_URL` includes `http://localhost:3000`.
 
@@ -50,9 +56,9 @@ Open [http://localhost:3000](http://localhost:3000).
 ### 3. Smoke test
 
 1. Confirm header shows **Connected** (green).
-2. Select the **Tax Delta** task template (IRS.gov research).
-3. Click **Start** — live browser iframe and agent timeline should populate.
-4. Use **Stop**, **Pause**, and the approval dock when the agent requests human input.
+2. Pick a demo card in the sidebar: research brief, Shopify + Stripe reconciliation, or month-end close.
+3. Click **Run** — live browser iframe and a plain-language timeline should populate.
+4. Use **Stop**, **Pause**, guidance, and the review dock when the agent asks you to approve, connect, or sign in.
 
 ---
 
@@ -63,6 +69,7 @@ pnpm dev      # development server
 pnpm build    # production build
 pnpm start    # serve production build
 pnpm lint     # ESLint
+pnpm test     # Vitest (parsers / pure lib)
 ```
 
 ---
@@ -89,13 +96,15 @@ web/
 
 | Template | `taskType` | Result view |
 |----------|------------|-------------|
-| Tax Delta | `tax_code_delta` | Findings + impact callout (IRS.gov) |
+| Multi-site tax impact brief | `tax_code_delta` | Findings, citations, impact, recommended actions |
+| Shopify + Stripe reconciliation | `commerce_reconciliation` | Normalized payout table + exceptions |
+| Month-end close assistant | `month_end_exception` | Close status, blockers, missing docs, checklist |
 
 ---
 
 ## Production notes
 
-Set `NEXT_PUBLIC_BACKEND_URL` to your deployed API origin in the host environment. The API must allow the frontend origin in `FRONTEND_URL` / CORS. No API keys or Browserbase secrets belong in this client — only `NEXT_PUBLIC_*` variables.
+Set `NEXT_PUBLIC_BACKEND_URL` to your deployed API origin in the host environment. The API must allow the frontend origin in `FRONTEND_URL` / CORS. No API keys or Steel secrets belong in this client — only `NEXT_PUBLIC_*` variables.
 
 ---
 

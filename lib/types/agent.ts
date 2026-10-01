@@ -22,8 +22,24 @@ export function isSessionActive(status: AgentStatus): boolean {
   )
 }
 
+/** Connecting, running, or awaiting approval — stop is available. */
+export function isTaskBusy(status: AgentStatus): boolean {
+  return (
+    status === "connecting" ||
+    status === "running" ||
+    status === "approval_pending"
+  )
+}
+
 export function isGoalEditable(status: AgentStatus): boolean {
   return status === "idle" || status === "complete" || status === "error"
+}
+
+export function isLiveBrowserInteractive(
+  status: AgentStatus,
+  pendingApproval: ApprovalRequest | null,
+): boolean {
+  return status === "approval_pending" && pendingApproval?.kind === "login"
 }
 
 export type ReasoningStepType =
@@ -50,6 +66,8 @@ export interface ReasoningStep {
   }
 }
 
+export type ApprovalKind = "approval" | "login" | "connect"
+
 /** Pending ask_human — server TTL is 5 minutes (APPROVAL_TTL_MS). */
 export interface ApprovalRequest {
   approvalId: string
@@ -57,6 +75,9 @@ export interface ApprovalRequest {
   context: string
   timestamp: number
   timeoutAt: number
+  kind?: ApprovalKind
+  connectUrl?: string
+  appName?: string
 }
 
 export interface AgentError {
@@ -69,7 +90,7 @@ export interface AgentError {
 export const APPROVAL_TTL_MS = 5 * 60 * 1000
 
 export const TAX_DELTA_DEFAULT_GOAL =
-  "Check IRS.gov for new revenue procedures about Section 179 or bonus depreciation published in the last 30 days. Cross-reference against Lakeside Manufacturing's 2025 depreciation schedule and tell me if they're affected."
+  "Research https://www.irs.gov for new revenue procedures about Section 179 or bonus depreciation from the last 30 days. Also check California https://www.cdtfa.ca.gov and New York https://www.tax.ny.gov, plus Shopify tax docs at https://help.shopify.com. Tell me if a California/New York Shopify seller like Lakeside Manufacturing would be affected."
 
 export type ViewMode = "live" | "screenshot"
 
@@ -85,6 +106,9 @@ export interface AgentStoreState {
   connectionPhase: ConnectionPhase
   sessionId: string | null
   liveUrl: string | null
+  /** Bumps on every live URL event so the iframe remounts even if the src is unchanged. */
+  liveViewKey: number
+  liveViewDisconnected: boolean
   status: AgentStatus
   goal: string
   submittedGoal: string
@@ -102,6 +126,8 @@ export interface AgentStoreState {
   replayVisibleSteps: number
   /** Non-zero while a task run is active; cleared on stop to ignore stale socket events. */
   activeRunId: number
+  /** Monotonic 0–100 job progress; holds when paused or waiting on approval. */
+  taskProgress: number
 }
 
 export interface AgentStoreActions {
@@ -115,6 +141,8 @@ export interface AgentStoreActions {
   resumeTask: () => void
   injectGuidance: (message: string) => void
   approveAction: (approved: boolean, answer?: string) => void
+  refreshLiveView: () => void
+  markLiveViewDisconnected: () => void
   handleServerEvent: (event: string, payload: unknown) => void
   setViewMode: (viewMode: ViewMode) => void
   setStepMode: (stepMode: boolean) => void
