@@ -18,8 +18,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Browser Agents",
-  description: "Agent workspace for Browser Agents",
+  title: "Minerva",
+  description: "Minerva, the AI browser agent for small-business accounting",
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/apple-icon.png" }],

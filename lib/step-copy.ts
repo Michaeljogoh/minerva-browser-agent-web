@@ -71,3 +71,12 @@ function actionLabel(step: ReasoningStep): string {
       return step.content.trim() || (tool ? `Working: ${tool}` : "Working")
   }
 }
+
+/** Hostname chip for navigation steps, e.g. "irs.gov". */
+export function stepHost(step: ReasoningStep): string | null {
+  if (step.type !== "action" || step.tool !== "navigate") {
+    return null
+  }
+  const host = hostnameFromUnknown(step.args?.url)
+  return host ? host.replace(/^www\./, "") : null
+}

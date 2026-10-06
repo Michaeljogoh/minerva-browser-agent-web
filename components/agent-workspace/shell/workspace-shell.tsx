@@ -65,7 +65,7 @@ export function WorkspaceShell({
 
   return (
     <div
-      aria-label="Browser Agents Workspace"
+      aria-label="Minerva Workspace"
       className="flex h-svh min-h-svh flex-col bg-sh-bg"
       style={
         {
