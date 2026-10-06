@@ -37,11 +37,19 @@ export function WorkspaceHeader({
           <BrandLogo />
           {showStatusChip ? (
             <span
+              key={status}
               className={cn(
-                "inline-flex h-5 items-center rounded-full border px-2 font-sans text-[11px] font-semibold tracking-tight",
+                "motion-crossfade inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 font-sans text-[11.5px] font-semibold tracking-tight",
                 statusChipClass(status),
               )}
             >
+              <span
+                aria-hidden
+                className={cn(
+                  "size-1.5 rounded-full bg-current",
+                  status === "connecting" && "motion-live-dot",
+                )}
+              />
               {statusLabel}
             </span>
           ) : null}

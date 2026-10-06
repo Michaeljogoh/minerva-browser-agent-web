@@ -87,8 +87,10 @@ export function TaskProgressBar() {
         >
           <ProgressIndicator
             className={cn(
-              "rounded-none transition-[width] duration-700 ease-out",
+              "rounded-none transition-[width,background-color] duration-700 ease-out",
               indicatorClass,
+              (status === "running" || status === "connecting") &&
+                "motion-sheen",
             )}
           />
         </ProgressTrack>

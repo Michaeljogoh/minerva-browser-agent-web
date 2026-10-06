@@ -54,11 +54,11 @@ export function taskProgressLabel(
     case "connecting":
       return "Starting browser session"
     case "running":
-      return `Job in progress — ${Math.round(percent)}%`
+      return `Job in progress, ${Math.round(percent)}%`
     case "paused":
       return `Paused at ${Math.round(percent)}%`
     case "approval_pending":
-      return `Waiting on you — ${Math.round(percent)}%`
+      return `Waiting on you, ${Math.round(percent)}%`
     case "complete":
       return "Job complete"
     case "error":

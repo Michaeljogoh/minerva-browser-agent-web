@@ -4,20 +4,19 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding font-sans text-[13px] font-semibold tracking-tight whitespace-nowrap outline-none select-none transition-[background-color,color,box-shadow,transform,opacity] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:not-aria-[haspopup]:scale-[0.98] disabled:pointer-events-none disabled:opacity-45 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/25 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-transparent bg-clip-padding font-sans text-[13px] font-semibold tracking-tight whitespace-nowrap outline-none select-none transition-[background-color,color,border-color,transform,opacity] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:not-aria-[haspopup]:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/25 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:bg-[color-mix(in_srgb,var(--primary),#000_8%)] dark:hover:bg-[color-mix(in_srgb,var(--primary),#fff_12%)]",
+        default: "bg-primary text-primary-foreground hover:bg-sh-primary-hover",
         outline:
-          "border-border bg-sh-surface-raised text-sh-text shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] hover:bg-sh-surface hover:border-[color-mix(in_srgb,var(--sh-border),var(--sh-text)_12%)] dark:shadow-none dark:hover:bg-sh-surface",
+          "border-sh-border bg-sh-surface-raised text-sh-text hover:border-[color-mix(in_srgb,var(--sh-border),var(--sh-text)_14%)] hover:bg-sh-surface",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_srgb,var(--secondary),var(--foreground)_6%)]",
+          "bg-sh-surface text-sh-text hover:bg-[color-mix(in_srgb,var(--sh-surface),var(--sh-text)_7%)]",
         ghost:
           "text-sh-text-muted hover:bg-sh-surface hover:text-sh-text dark:hover:bg-sh-surface-raised",
         destructive:
-          "bg-destructive text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-[color-mix(in_srgb,var(--destructive),#000_10%)]",
+          "bg-destructive text-sh-on-error hover:bg-[color-mix(in_srgb,var(--destructive),#000_12%)] dark:hover:bg-[color-mix(in_srgb,var(--destructive),#fff_14%)]",
         link: "rounded-md text-primary underline-offset-4 hover:underline",
       },
       size: {

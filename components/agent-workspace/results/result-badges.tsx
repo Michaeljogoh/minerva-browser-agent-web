@@ -1,5 +1,9 @@
 "use client"
 
+import {
+  TONE_FILL,
+  type ResultTone,
+} from "@/components/agent-workspace/results/result-primitives"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
@@ -25,18 +29,21 @@ const SUCCESS_STATUSES = new Set([
   "ready",
 ])
 
-function statusBadgeTone(status: string): string | undefined {
+function statusTone(status: string): ResultTone {
   if (ERROR_STATUSES.has(status)) {
-    return "border-transparent bg-sh-error/10 text-sh-error"
+    return "error"
   }
   if (WARNING_STATUSES.has(status)) {
-    return "border-transparent bg-sh-warning-fill text-sh-warning"
+    return "warning"
   }
   if (SUCCESS_STATUSES.has(status)) {
-    return "border-transparent bg-sh-success-fill text-sh-accent-green"
+    return "success"
   }
-  return undefined
+  return "neutral"
 }
+
+const PILL =
+  "h-6 gap-1.5 rounded-full border-transparent px-2.5 font-sans text-[11.5px] font-semibold"
 
 export function StatusBadge({
   status,
@@ -48,13 +55,10 @@ export function StatusBadge({
   return (
     <Badge
       variant="outline"
-      className={cn(
-        "rounded-full border-sh-border font-sans text-[11px] capitalize",
-        statusBadgeTone(status),
-        className,
-      )}
+      className={cn(PILL, "capitalize", TONE_FILL[statusTone(status)], className)}
     >
-      {status.replace("_", " ")}
+      <span aria-hidden className="size-1.5 rounded-full bg-current" />
+      {status.replaceAll("_", " ")}
     </Badge>
   )
 }
@@ -63,7 +67,7 @@ export function TaxSensitiveBadge() {
   return (
     <Badge
       variant="outline"
-      className="rounded-full border-transparent bg-sh-warning-fill font-sans text-[11px] text-sh-warning"
+      className={cn(PILL, TONE_FILL.warning)}
     >
       Tax-sensitive
     </Badge>

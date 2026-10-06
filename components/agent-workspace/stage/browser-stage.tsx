@@ -1,8 +1,18 @@
 "use client"
 
 import * as React from "react"
+import {
+  CircleCheckIcon,
+  FileTextIcon,
+  HandIcon,
+  ImagesIcon,
+  MinusIcon,
+  MonitorPlayIcon,
+  PlusIcon,
+} from "lucide-react"
 
 import { ResultSummary } from "@/components/agent-workspace/results/result-summary"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { isLiveBrowserInteractive, isTaskBusy } from "@/lib/types/agent"
 import { cn } from "@/lib/utils"
@@ -79,33 +89,87 @@ function browsingHostname(
   return isCloudViewerHost(host) ? null : host
 }
 
+const ZOOM_MIN = 1
+const ZOOM_MAX = 3
+const ZOOM_STEP = 0.25
+
 function LatestScreenshot({
   url,
   message,
+  zoomable = false,
 }: {
   url: string
   message?: string
+  zoomable?: boolean
 }) {
+  const [zoom, setZoom] = React.useState(ZOOM_MIN)
+  const zoomed = zoom > ZOOM_MIN
+  const changeZoom = (delta: number) =>
+    setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z + delta)))
+
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-2">
+    <div className="relative flex h-full w-full flex-col items-center justify-center gap-2 p-2">
       {message ? (
         <p className="max-w-md text-center font-sans text-[12px] text-sh-text-muted">
           {message}
         </p>
       ) : null}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={url}
-        alt="Latest page screenshot"
-        width={1280}
-        height={800}
-        className="max-h-full max-w-full rounded-lg border border-sh-border object-contain"
-      />
+      <div
+        className={cn(
+          "min-h-0 w-full flex-1",
+          zoomed ? "overflow-auto" : "flex items-center justify-center",
+        )}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt="Latest page screenshot"
+          width={1280}
+          height={800}
+          style={zoomed ? { width: `${zoom * 100}%` } : undefined}
+          className={cn(
+            "rounded-lg border border-sh-border object-contain",
+            zoomed ? "mx-auto block max-w-none" : "max-h-full max-w-full",
+          )}
+        />
+      </div>
+      {zoomable ? (
+        <div className="absolute right-4 bottom-4 flex items-center gap-0.5 rounded-full border border-sh-border bg-sh-surface-raised p-1 shadow-md">
+          <Button
+            type="button"
+            size="icon-xs"
+            className="rounded-full"
+            aria-label="Zoom out"
+            disabled={zoom <= ZOOM_MIN}
+            onClick={() => changeZoom(-ZOOM_STEP)}
+          >
+            <MinusIcon />
+          </Button>
+          <button
+            type="button"
+            className="min-w-11 rounded-full font-mono text-[11.5px] tabular-nums text-sh-text-muted hover:text-sh-text focus-visible:ring-2 focus-visible:ring-sh-steer/40 focus-visible:outline-none"
+            aria-label="Reset zoom"
+            onClick={() => setZoom(ZOOM_MIN)}
+          >
+            {Math.round(zoom * 100)}%
+          </button>
+          <Button
+            type="button"
+            size="icon-xs"
+            className="rounded-full"
+            aria-label="Zoom in"
+            disabled={zoom >= ZOOM_MAX}
+            onClick={() => changeZoom(ZOOM_STEP)}
+          >
+            <PlusIcon />
+          </Button>
+        </div>
+      ) : null}
     </div>
   )
 }
 
-/** Shared idle / waiting stage — wireframe lines, dead-centered in the panel. */
+/** Shared idle / waiting stage: grid backdrop with the copy dead-centered in the panel. */
 function StageLinedPlaceholder({
   title,
   caption,
@@ -115,38 +179,21 @@ function StageLinedPlaceholder({
   caption: string
   pulse?: boolean
 }) {
-  const line = cn(
-    "rounded-md bg-sh-surface dark:bg-sh-bg",
-    pulse ? "animate-pulse" : "opacity-80",
-  )
-
   return (
-    <div className="absolute inset-0 flex items-center justify-center p-6">
-      <div className="flex w-full max-w-[22rem] flex-col items-center gap-5">
-        <div
-          className={cn(
-            "w-full overflow-hidden rounded-2xl border border-sh-border bg-sh-bg/40 dark:bg-sh-bg/60",
-            pulse && "motion-safe:animate-pulse",
-          )}
-          aria-hidden
-        >
-          <div className="flex items-center gap-1.5 border-b border-sh-border px-3 py-2.5">
-            <span className="size-1.5 rounded-full bg-sh-accent-green/80" />
-            <span className={cn("size-1.5 rounded-full", line)} />
-            <span className={cn("size-1.5 rounded-full", line)} />
-            <span className={cn("ml-2 h-2 flex-1 rounded-md", line)} />
-          </div>
-          <div className="flex flex-col gap-2.5 p-4">
-            <span className={cn("h-2.5 w-2/5", line)} />
-            <span className={cn("h-2.5 w-full", line)} />
-            <span className={cn("h-2.5 w-11/12", line)} />
-            <span className={cn("h-2.5 w-4/5", line)} />
-            <span className={cn("mt-1 h-24 w-full rounded-xl", line)} />
-            <span className={cn("h-2.5 w-3/5", line)} />
-            <span className={cn("h-2.5 w-2/3", line)} />
-          </div>
-        </div>
-
+    <div
+      className="absolute inset-0 flex items-center justify-center p-6"
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, var(--sh-grid) 1px, transparent 1px), linear-gradient(var(--sh-grid) 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+      }}
+    >
+      <div
+        className={cn(
+          "flex w-full max-w-[22rem] flex-col items-center gap-5",
+          pulse && "motion-safe:animate-pulse",
+        )}
+      >
         <div className="flex flex-col items-center gap-1.5 text-center">
           <p className="font-sans text-[14px] font-semibold tracking-tight text-sh-text">
             {title}
@@ -163,8 +210,11 @@ function StageLinedPlaceholder({
 const STAGE_IDLE_COPY = {
   title: "Waiting for a job",
   caption:
-    "Run a job to watch the agent here — the live stream and screenshots update after each step.",
+    "Run a job to watch the agent here. The live stream and screenshots update after each step.",
 } as const
+
+const STAGE_TAB_CLASS =
+  "flex-none gap-1.5 rounded-none px-0.5 font-sans text-[12.5px] font-medium text-sh-text-muted transition-colors duration-150 data-active:text-sh-text data-active:after:bg-sh-steer [&_svg]:size-3.5 data-active:[&_svg]:text-sh-accent-green"
 
 
 export function BrowserStage() {
@@ -245,39 +295,42 @@ export function BrowserStage() {
         <div className="flex h-11 shrink-0 items-center justify-between gap-3 border-b border-sh-border px-4">
           <TabsList
             variant="line"
-            className="h-11 rounded-none bg-transparent p-0"
+            className="h-11 gap-4 rounded-none bg-transparent p-0"
           >
             {hasReport ? (
-              <TabsTrigger
-                value="report"
-                className="rounded-none font-sans text-[12px] text-sh-text-muted data-active:text-sh-text data-active:after:bg-sh-steer"
-              >
+              <TabsTrigger value="report" className={STAGE_TAB_CLASS}>
+                <FileTextIcon aria-hidden />
                 Report
               </TabsTrigger>
             ) : null}
-            <TabsTrigger
-              value="live"
-              className="rounded-none font-sans text-[12px] text-sh-text-muted data-active:text-sh-text data-active:after:bg-sh-steer"
-            >
+            <TabsTrigger value="live" className={STAGE_TAB_CLASS}>
+              <MonitorPlayIcon aria-hidden />
               Live browser
             </TabsTrigger>
-            <TabsTrigger
-              value="screenshot"
-              className="rounded-none font-sans text-[12px] text-sh-text-muted data-active:text-sh-text data-active:after:bg-sh-steer"
-            >
+            <TabsTrigger value="screenshot" className={STAGE_TAB_CLASS}>
+              <ImagesIcon aria-hidden />
               Screenshots
             </TabsTrigger>
           </TabsList>
           {userCanControl ? (
-            <span className="rounded-full bg-sh-steer-fill px-2.5 py-1 font-sans text-[12px] text-sh-steer">
-              Your turn — sign in on Live browser
+            <span className="motion-crossfade inline-flex items-center gap-1.5 rounded-full bg-primary px-2.5 py-1 font-sans text-[12px] font-semibold text-primary-foreground">
+              <HandIcon className="size-3.5" aria-hidden />
+              Your turn: sign in on Live browser
             </span>
           ) : agentControlling && hostname ? (
-            <span className="truncate font-sans text-[12px] text-sh-text-muted">
-              Agent is browsing {hostname}
+            <span className="motion-crossfade inline-flex min-w-0 items-center gap-2 font-sans text-[12px] text-sh-text-muted">
+              <span
+                aria-hidden
+                className="motion-live-dot size-1.5 shrink-0 rounded-full bg-sh-accent-green"
+              />
+              <span className="truncate">
+                Agent is browsing{" "}
+                <span className="font-medium text-sh-text">{hostname}</span>
+              </span>
             </span>
           ) : status === "complete" ? (
-            <span className="truncate font-sans text-[12px] text-sh-text-muted">
+            <span className="motion-crossfade inline-flex items-center gap-1.5 font-sans text-[12px] font-medium text-sh-accent-green">
+              <CircleCheckIcon className="size-3.5" aria-hidden />
               Job complete
             </span>
           ) : hostname ? (
@@ -292,8 +345,10 @@ export function BrowserStage() {
             value="report"
             className="relative m-0 flex min-h-0 flex-1 flex-col overflow-hidden p-4"
           >
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-sh-border bg-sh-surface-raised p-5">
-              <ResultSummary />
+            <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-sh-border bg-sh-bg">
+              <div className="mx-auto w-full max-w-7xl px-5 py-7 md:px-8 md:py-10">
+                <ResultSummary />
+              </div>
             </div>
           </TabsContent>
         ) : null}
@@ -322,9 +377,9 @@ export function BrowserStage() {
                 />
                 {userCanControl ? (
                   <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-3">
-                    <span className="rounded-full bg-primary px-3 py-1.5 font-sans text-[12px] text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-                      Browser unlocked — finish login, then confirm in the job
-                      panel
+                    <span className="motion-dock-enter rounded-full bg-primary px-3.5 py-1.5 font-sans text-[12px] font-semibold text-primary-foreground shadow-lg shadow-black/25">
+                      Browser unlocked. Finish login, then confirm in the job
+                      panel.
                     </span>
                   </div>
                 ) : null}
@@ -335,8 +390,8 @@ export function BrowserStage() {
                   url={latestScreenshotUrl}
                   message={
                     userCanControl
-                      ? "Live view failed to load — use the screenshot below or open the live link in a new tab, then confirm in the job panel."
-                      : "Live view failed to load — showing the latest screenshot instead."
+                      ? "Live view failed to load. Use the screenshot below or open the live link in a new tab, then confirm in the job panel."
+                      : "Live view failed to load. Showing the latest screenshot instead."
                   }
                 />
               ) : (
@@ -383,7 +438,7 @@ export function BrowserStage() {
                 key={latestScreenshotUrl}
                 className="motion-crossfade absolute inset-0 flex items-center justify-center p-3"
               >
-                <LatestScreenshot url={latestScreenshotUrl} />
+                <LatestScreenshot url={latestScreenshotUrl} zoomable />
               </div>
             ) : showScreenshotSkeleton ? (
               <StageLinedPlaceholder

@@ -11,7 +11,7 @@ import {
   XIcon,
 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import {
   formatCountdown,
@@ -79,7 +79,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
   const isConnect = kind === "connect"
   const isHandoff = isLogin || isConnect
   const title = isLogin
-    ? "Your turn — sign in"
+    ? "Your turn: sign in"
     : isConnect
       ? "Connect this app"
       : "Needs your review"
@@ -117,20 +117,21 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
       aria-modal="true"
       aria-labelledby="task-approval-title"
       className={cn(
-        "motion-dock-enter relative overflow-hidden rounded-xl border bg-sh-surface-raised",
+        "motion-dock-enter relative overflow-hidden rounded-2xl border bg-sh-surface-raised",
         isHandoff
-          ? "border-sh-steer/35 bg-sh-steer-fill/60"
-          : "border-sh-warning/35 bg-sh-warning-fill/70",
+          ? "border-sh-steer/30 bg-sh-steer-fill"
+          : "border-sh-warning/30 bg-sh-warning-fill",
         className,
       )}
     >
-      <div className="flex flex-col gap-3 p-3.5">
-        <div className="flex items-start gap-2.5">
+      <div className="flex flex-col gap-3.5 p-4">
+        <div className="flex items-start gap-3">
           <span
+            aria-hidden
             className={cn(
-              "flex size-8 shrink-0 items-center justify-center rounded-full",
+              "motion-pop flex size-9 shrink-0 items-center justify-center rounded-xl",
               isHandoff
-                ? "bg-sh-steer/15 text-sh-steer"
+                ? "bg-primary text-primary-foreground"
                 : "bg-sh-warning/15 text-sh-warning",
             )}
           >
@@ -145,7 +146,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
           <div className="min-w-0">
             <p
               id="task-approval-title"
-              className="font-sans text-[13px] font-medium text-sh-text"
+              className="font-sans text-[13.5px] font-semibold text-sh-text"
             >
               {title}
             </p>
@@ -160,17 +161,17 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
             href={pendingApproval.connectUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 font-sans text-[12px] text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:bg-[color-mix(in_srgb,var(--primary),#000_8%)] dark:hover:bg-[color-mix(in_srgb,var(--primary),#fff_12%)]"
+            className={cn(buttonVariants({ size: "sm" }), "self-start")}
           >
-            <ExternalLinkIcon className="size-3.5" aria-hidden />
+            <ExternalLinkIcon data-icon="inline-start" aria-hidden />
             Open secure {pendingApproval.appName ?? "app"} connection
           </a>
         ) : null}
 
         {isLogin ? (
           <p className="font-sans text-[13px] leading-relaxed text-sh-text-muted">
-            The live browser is unlocked. Sign in there — never paste a password
-            in this chat.
+            The live browser is unlocked. Sign in there, and never paste a
+            password in this chat.
           </p>
         ) : null}
 
@@ -203,7 +204,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
         {timedOut ? (
           <div className="flex flex-col gap-2">
             <p className="font-sans text-[13px] text-sh-error" role="alert">
-              This review expired — stop the job or start a new one.
+              This review expired. Stop the job or start a new one.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button

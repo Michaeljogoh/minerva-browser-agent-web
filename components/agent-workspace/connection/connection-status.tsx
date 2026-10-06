@@ -33,7 +33,7 @@ export function ConnectionStatus({ className }: ConnectionStatusProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-sh-border bg-sh-surface-raised px-2.5 py-1 font-sans text-[12px] text-sh-text-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] dark:shadow-none",
+        "inline-flex items-center gap-1.5 rounded-full border border-sh-border bg-sh-surface-raised px-2.5 py-1 font-sans text-[12px] font-medium text-sh-text-muted",
         className,
       )}
     >

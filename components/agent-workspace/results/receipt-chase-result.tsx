@@ -1,7 +1,17 @@
 "use client"
 
+import { FileSearchIcon, FileWarningIcon, SendIcon } from "lucide-react"
+
 import type { ReceiptChaseResult } from "@/lib/types/task-results"
 import { StatusBadge } from "@/components/agent-workspace/results/result-badges"
+import {
+  ResultContext,
+  ResultSection,
+  ResultTableFrame,
+  StatGrid,
+  resultTable,
+  toneWhen,
+} from "@/components/agent-workspace/results/result-primitives"
 import {
   Table,
   TableBody,
@@ -19,56 +29,78 @@ type ReceiptChaseResultViewProps = {
 
 export function ReceiptChaseResultView({ data }: ReceiptChaseResultViewProps) {
   return (
-    <div className="space-y-3">
-      <p className="font-mono text-[10px] text-sh-text-muted">
-        {data.clientName} · {data.period}
-      </p>
+    <div className="motion-stagger flex flex-col gap-8">
+      <ResultContext clientName={data.clientName} period={data.period} />
 
-      <Table>
-        <TableHeader>
-          <TableRow className="border-sh-border hover:bg-transparent">
-            <TableHead className="font-mono text-[10px]">Vendor</TableHead>
-            <TableHead className="font-mono text-[10px]">Amount</TableHead>
-            <TableHead className="font-mono text-[10px]">Source</TableHead>
-            <TableHead className="font-mono text-[10px]">Category</TableHead>
-            <TableHead className="font-mono text-[10px]">Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.items.map((item) => (
-            <TableRow
-              key={item.id}
-              className={cn(
-                "border-sh-border",
-                item.status === "missing" &&
-                  "border-l-2 border-l-[var(--sh-error)] bg-sh-bg",
-              )}
-            >
-              <TableCell className="max-w-[100px] truncate font-sans text-xs">
-                {item.vendor ?? "—"}
-              </TableCell>
-              <TableCell className="font-mono text-xs">
-                {formatUsd(item.amountUsd)}
-              </TableCell>
-              <TableCell className="font-mono text-xs capitalize">
-                {item.source}
-              </TableCell>
-              <TableCell className="font-mono text-xs">
-                {item.proposedCategory ?? "—"}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={item.status} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <StatGrid
+        items={[
+          {
+            label: "Found",
+            value: String(data.totals.foundCount),
+            icon: FileSearchIcon,
+          },
+          {
+            label: "Posted",
+            value: String(data.totals.postedCount),
+            icon: SendIcon,
+            tone: "success",
+          },
+          {
+            label: "Missing",
+            value: String(data.totals.missingCount),
+            icon: FileWarningIcon,
+            tone: toneWhen(data.totals.missingCount, "error"),
+          },
+        ]}
+      />
 
-      <div className="grid grid-cols-3 gap-1 font-mono text-[10px] text-sh-text-muted">
-        <span>Found: {data.totals.foundCount}</span>
-        <span>Posted: {data.totals.postedCount}</span>
-        <span>Missing: {data.totals.missingCount}</span>
-      </div>
+      <ResultSection title="Receipts" count={data.items.length}>
+        <ResultTableFrame>
+          <Table>
+            <TableHeader>
+              <TableRow className={resultTable.headRow}>
+                <TableHead className={resultTable.head}>Vendor</TableHead>
+                <TableHead className={cn(resultTable.head, "text-right")}>
+                  Amount
+                </TableHead>
+                <TableHead className={resultTable.head}>Source</TableHead>
+                <TableHead className={resultTable.head}>Category</TableHead>
+                <TableHead className={resultTable.head}>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.items.map((item) => (
+                <TableRow
+                  key={item.id}
+                  className={cn(
+                    resultTable.row,
+                    item.status === "missing" && resultTable.errorRow,
+                  )}
+                >
+                  <TableCell
+                    className={cn(resultTable.cell, "max-w-[200px] truncate font-medium")}
+                    title={item.vendor}
+                  >
+                    {item.vendor ?? "-"}
+                  </TableCell>
+                  <TableCell className={resultTable.num}>
+                    {formatUsd(item.amountUsd)}
+                  </TableCell>
+                  <TableCell className={cn(resultTable.cell, "capitalize text-sh-text-muted")}>
+                    {item.source}
+                  </TableCell>
+                  <TableCell className={cn(resultTable.cell, "text-sh-text-muted")}>
+                    {item.proposedCategory ?? "-"}
+                  </TableCell>
+                  <TableCell className={resultTable.cell}>
+                    <StatusBadge status={item.status} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ResultTableFrame>
+      </ResultSection>
     </div>
   )
 }

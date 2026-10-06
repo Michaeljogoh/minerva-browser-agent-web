@@ -1,6 +1,18 @@
 "use client"
 
 import * as React from "react"
+import {
+  ArrowDownIcon,
+  ArrowUpDownIcon,
+  ArrowUpIcon,
+  ChevronDownIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  FileWarningIcon,
+  LandmarkIcon,
+  ListChecksIcon,
+  ListTodoIcon,
+} from "lucide-react"
 
 import type { MonthEndExceptionReport } from "@/lib/types/task-results"
 import { TaxDeltaResultView } from "@/components/agent-workspace/results/tax-delta-result"
@@ -8,6 +20,16 @@ import {
   StatusBadge,
   TaxSensitiveBadge,
 } from "@/components/agent-workspace/results/result-badges"
+import {
+  ActionList,
+  CountChip,
+  ResultContext,
+  ResultSection,
+  ResultTableFrame,
+  StatGrid,
+  resultTable,
+  toneWhen,
+} from "@/components/agent-workspace/results/result-primitives"
 import {
   Collapsible,
   CollapsibleContent,
@@ -64,119 +86,185 @@ export function MonthEndResultView({ data }: MonthEndResultViewProps) {
     }
   }
 
-  const sortLabel = (key: SortKey, label: string) => (
-    <button
-      type="button"
-      className="font-mono text-[10px] uppercase tracking-wide hover:text-sh-text"
-      onClick={() => toggleSort(key)}
-    >
-      {label}
-      {sortKey === key ? (sortDir === "asc" ? " ↑" : " ↓") : ""}
-    </button>
-  )
+  const ariaSort = (key: SortKey) =>
+    sortKey === key ? (sortDir === "asc" ? "ascending" : "descending") : "none"
+
+  const sortLabel = (key: SortKey, label: string, alignEnd = false) => {
+    const SortIcon =
+      sortKey !== key
+        ? ArrowUpDownIcon
+        : sortDir === "asc"
+          ? ArrowUpIcon
+          : ArrowDownIcon
+    return (
+      <button
+        type="button"
+        className={cn(
+          "inline-flex cursor-pointer items-center gap-1 rounded-md transition-colors duration-150 hover:text-sh-text focus-visible:ring-2 focus-visible:ring-sh-steer/40 focus-visible:outline-none",
+          sortKey === key && "text-sh-text",
+          alignEnd && "flex-row-reverse",
+        )}
+        onClick={() => toggleSort(key)}
+      >
+        {label}
+        <SortIcon
+          className={cn("size-3", sortKey !== key && "opacity-50")}
+          aria-hidden
+        />
+      </button>
+    )
+  }
+
+  const hasBlockers = (data.blockers?.length ?? 0) > 0
+  const hasMissing = (data.missingDocuments?.length ?? 0) > 0
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="font-mono text-[10px] text-sh-text-muted">
-          {data.clientName} · {data.period}
-        </p>
-        {data.closeStatus ? (
-          <StatusBadge status={data.closeStatus} />
-        ) : null}
-      </div>
+    <div className="motion-stagger flex flex-col gap-8">
+      <ResultContext clientName={data.clientName} period={data.period}>
+        {data.closeStatus ? <StatusBadge status={data.closeStatus} /> : null}
+      </ResultContext>
 
-      {data.blockers && data.blockers.length > 0 ? (
-        <div className="border border-l-2 border-l-(--sh-warning) border-sh-border bg-sh-bg px-2.5 py-2">
-          <p className="font-mono text-[10px] uppercase tracking-wide text-(--sh-warning)">
-            Blockers
-          </p>
-          <ul className="mt-1 list-inside list-disc font-sans text-xs text-sh-text">
-            {data.blockers.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <StatGrid
+        items={[
+          {
+            label: "Exceptions",
+            value: String(data.totals.exceptionCount),
+            icon: ListChecksIcon,
+          },
+          {
+            label: "Approved",
+            value: String(data.totals.approvedCount),
+            icon: CircleCheckIcon,
+            tone: "success",
+          },
+          {
+            label: "Rejected",
+            value: String(data.totals.rejectedCount),
+            icon: CircleXIcon,
+            tone: toneWhen(data.totals.rejectedCount, "error"),
+          },
+          {
+            label: "Tax flags",
+            value: String(data.totals.taxFlagCount),
+            icon: LandmarkIcon,
+            tone: toneWhen(data.totals.taxFlagCount, "warning"),
+          },
+        ]}
+      />
 
-      {data.missingDocuments && data.missingDocuments.length > 0 ? (
-        <div className="border border-sh-border bg-sh-bg px-2.5 py-2">
-          <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
-            Missing documents
-          </p>
-          <ul className="mt-1 list-inside list-disc font-sans text-xs text-sh-text">
-            {data.missingDocuments.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <Table>
-        <TableHeader>
-          <TableRow className="border-sh-border hover:bg-transparent">
-            <TableHead>{sortLabel("description", "Description")}</TableHead>
-            <TableHead>{sortLabel("amountUsd", "Amount")}</TableHead>
-            <TableHead>{sortLabel("proposedCategory", "Category")}</TableHead>
-            <TableHead>Tax</TableHead>
-            <TableHead>{sortLabel("status", "Status")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sorted.map((row) => (
-            <TableRow
-              key={row.id}
-              className={cn(
-                "border-sh-border",
-                row.taxSensitive && "border-l-2 border-l-[var(--sh-warning)]",
-              )}
+      {hasBlockers || hasMissing ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {hasBlockers ? (
+            <ResultSection title="Blockers" count={data.blockers!.length}>
+              <ActionList items={data.blockers!} tone="warning" />
+            </ResultSection>
+          ) : null}
+          {hasMissing ? (
+            <ResultSection
+              title="Missing documents"
+              count={data.missingDocuments!.length}
             >
-              <TableCell className="max-w-[140px] truncate font-sans text-xs">
-                {row.description}
-              </TableCell>
-              <TableCell className="font-mono text-xs">
-                {formatUsd(row.amountUsd)}
-              </TableCell>
-              <TableCell className="font-mono text-xs">
-                {row.proposedCategory ?? "—"}
-              </TableCell>
-              <TableCell>
-                {row.taxSensitive ? <TaxSensitiveBadge /> : null}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={row.status} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              <ActionList
+                items={data.missingDocuments!}
+                tone="error"
+                icon={FileWarningIcon}
+              />
+            </ResultSection>
+          ) : null}
+        </div>
+      ) : null}
 
-      <div className="grid grid-cols-2 gap-1 font-mono text-[10px] text-sh-text-muted">
-        <span>Exceptions: {data.totals.exceptionCount}</span>
-        <span>Approved: {data.totals.approvedCount}</span>
-        <span>Rejected: {data.totals.rejectedCount}</span>
-        <span>Tax flags: {data.totals.taxFlagCount}</span>
-      </div>
+      <ResultSection title="Exceptions" count={sorted.length}>
+        <ResultTableFrame>
+          <Table>
+            <TableHeader>
+              <TableRow className={resultTable.headRow}>
+                <TableHead
+                  className={resultTable.head}
+                  aria-sort={ariaSort("description")}
+                >
+                  {sortLabel("description", "Description")}
+                </TableHead>
+                <TableHead
+                  className={cn(resultTable.head, "text-right")}
+                  aria-sort={ariaSort("amountUsd")}
+                >
+                  {sortLabel("amountUsd", "Amount", true)}
+                </TableHead>
+                <TableHead
+                  className={resultTable.head}
+                  aria-sort={ariaSort("proposedCategory")}
+                >
+                  {sortLabel("proposedCategory", "Category")}
+                </TableHead>
+                <TableHead className={resultTable.head}>Tax</TableHead>
+                <TableHead
+                  className={resultTable.head}
+                  aria-sort={ariaSort("status")}
+                >
+                  {sortLabel("status", "Status")}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sorted.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className={cn(
+                    resultTable.row,
+                    row.taxSensitive && resultTable.warnRow,
+                  )}
+                >
+                  <TableCell
+                    className={cn(resultTable.cell, "max-w-[240px] truncate")}
+                    title={row.description}
+                  >
+                    {row.description}
+                  </TableCell>
+                  <TableCell className={resultTable.num}>
+                    {formatUsd(row.amountUsd)}
+                  </TableCell>
+                  <TableCell className={cn(resultTable.cell, "text-sh-text-muted")}>
+                    {row.proposedCategory ?? "-"}
+                  </TableCell>
+                  <TableCell className={resultTable.cell}>
+                    {row.taxSensitive ? <TaxSensitiveBadge /> : null}
+                  </TableCell>
+                  <TableCell className={resultTable.cell}>
+                    <StatusBadge status={row.status} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ResultTableFrame>
+      </ResultSection>
 
       {data.checklist && data.checklist.length > 0 ? (
-        <div className="border border-sh-border bg-sh-bg px-2.5 py-2">
-          <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
-            Close checklist
-          </p>
-          <ul className="mt-1.5 list-inside list-disc space-y-0.5 font-sans text-xs text-sh-text">
-            {data.checklist.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
+        <ResultSection title="Close checklist" count={data.checklist.length}>
+          <ActionList items={data.checklist} icon={ListTodoIcon} />
+        </ResultSection>
       ) : null}
 
       {data.taxBrief ? (
-        <Collapsible defaultOpen={false}>
-          <CollapsibleTrigger className="font-mono text-[10px] text-sh-accent-link hover:underline">
-            IRS tax brief ({data.taxBrief.findings.length} findings)
+        <Collapsible
+          defaultOpen={false}
+          className="rounded-xl border border-sh-border bg-sh-surface-raised"
+        >
+          <CollapsibleTrigger className="group flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-left transition-colors duration-150 hover:bg-sh-surface/60 focus-visible:ring-2 focus-visible:ring-sh-steer/40 focus-visible:outline-none">
+            <span className="flex items-center gap-2.5">
+              <LandmarkIcon className="size-4 text-sh-accent-green" aria-hidden />
+              <span className="text-[13px] font-semibold text-sh-text">
+                IRS tax brief
+              </span>
+              <CountChip count={data.taxBrief.findings.length} />
+            </span>
+            <ChevronDownIcon
+              className="size-4 text-sh-text-muted transition-transform duration-200 ease-out group-data-panel-open:rotate-180"
+              aria-hidden
+            />
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
+          <CollapsibleContent className="border-t border-sh-border px-4 py-4">
             <TaxDeltaResultView data={data.taxBrief} compact />
           </CollapsibleContent>
         </Collapsible>

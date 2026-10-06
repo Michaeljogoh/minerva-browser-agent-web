@@ -24,6 +24,8 @@ function GooeyToaster({
   position = "top-center",
   preset = "smooth",
   showTimestamp = false,
+  showProgress = true,
+  duration = 5000,
   ...props
 }: GooeyToasterProps) {
   const { resolvedTheme } = useTheme()
@@ -42,6 +44,8 @@ function GooeyToaster({
       position={position}
       preset={preset}
       showTimestamp={showTimestamp}
+      showProgress={showProgress}
+      duration={duration}
       theme={theme}
       {...props}
     />

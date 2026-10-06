@@ -23,6 +23,9 @@ function stepIconClass(type: ReasoningStep["type"] | "initializing"): string {
       return "text-sh-warning"
     case "error":
       return "text-sh-error"
+    case "action":
+    case "initializing":
+      return "text-sh-accent-green"
     default:
       return "text-sh-text-muted"
   }
@@ -117,7 +120,7 @@ export function TaskChatTimeline({ className }: TaskChatTimelineProps) {
             <div
               key={step.id}
               className={cn(
-                "flex items-start gap-2 text-[12px] leading-snug text-sh-text",
+                "motion-card-enter flex items-start gap-2 text-[12px] leading-snug text-sh-text transition-colors duration-200",
                 !isLatest && "text-sh-text-muted",
               )}
             >
@@ -131,14 +134,18 @@ export function TaskChatTimeline({ className }: TaskChatTimelineProps) {
       </div>
 
       {showCompletion && result ? (
-        <div className="flex flex-col gap-2">
-          <div className="h-px w-full bg-sh-border" />
-          <p className="text-[13px] leading-relaxed text-sh-text">
-            {result.summary}
-          </p>
-          <p className="flex items-center gap-1.5 text-[11px] text-sh-text-muted">
-            <CheckIcon className="size-3.5 text-sh-accent-green" aria-hidden />
+        <div className="motion-rise mt-1 flex flex-col gap-2.5 rounded-xl border border-sh-border bg-sh-surface-raised p-3.5">
+          <p className="flex items-center gap-2 text-[12px] font-semibold text-sh-accent-green">
+            <span
+              aria-hidden
+              className="motion-pop flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            >
+              <CheckIcon className="size-3" strokeWidth={3} />
+            </span>
             Finished in {workedSeconds}s
+          </p>
+          <p className="text-[13px] leading-relaxed text-pretty text-sh-text">
+            {result.summary}
           </p>
         </div>
       ) : null}

@@ -1,7 +1,24 @@
 "use client"
 
+import {
+  BanknoteIcon,
+  CircleAlertIcon,
+  ListTodoIcon,
+  ReceiptIcon,
+  WalletIcon,
+} from "lucide-react"
+
 import type { CommerceReconciliationResult } from "@/lib/types/task-results"
 import { StatusBadge } from "@/components/agent-workspace/results/result-badges"
+import {
+  ActionList,
+  ResultContext,
+  ResultSection,
+  ResultTableFrame,
+  StatGrid,
+  resultTable,
+  toneWhen,
+} from "@/components/agent-workspace/results/result-primitives"
 import {
   Table,
   TableBody,
@@ -22,73 +39,55 @@ export function CommerceRecResultView({ data }: CommerceRecResultViewProps) {
   const matched = data.rows.filter((row) => row.status === "matched")
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="font-mono text-[10px] text-sh-text-muted">
-          {data.clientName} · {data.period}
-        </p>
-        {data.connectedSources.length > 0 ? (
-          <p className="font-mono text-[10px] text-sh-text-muted">
-            Sources: {data.connectedSources.join(" · ")}
-          </p>
-        ) : null}
-      </div>
+    <div className="motion-stagger flex flex-col gap-8">
+      <ResultContext clientName={data.clientName} period={data.period}>
+        {data.connectedSources.map((source) => (
+          <span
+            key={source}
+            className="inline-flex h-6 items-center rounded-full bg-sh-surface px-2.5 text-[11.5px] font-medium capitalize text-sh-text-muted"
+          >
+            {source}
+          </span>
+        ))}
+      </ResultContext>
 
-      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-        <Stat label="Gross" value={formatUsd(data.totals.grossUsd)} />
-        <Stat label="Net payout" value={formatUsd(data.totals.netUsd)} />
-        <Stat
-          label="Exceptions"
-          value={String(data.totals.exceptionCount)}
-          warn={data.totals.exceptionCount > 0}
-        />
-      </div>
+      <StatGrid
+        items={[
+          {
+            label: "Gross",
+            value: formatUsd(data.totals.grossUsd),
+            icon: BanknoteIcon,
+          },
+          {
+            label: "Fees",
+            value: formatUsd(data.totals.feeUsd),
+            icon: ReceiptIcon,
+          },
+          {
+            label: "Net payout",
+            value: formatUsd(data.totals.netUsd),
+            icon: WalletIcon,
+            tone: "success",
+          },
+          {
+            label: "Exceptions",
+            value: String(data.totals.exceptionCount),
+            icon: CircleAlertIcon,
+            tone: toneWhen(data.totals.exceptionCount, "warning"),
+          },
+        ]}
+      />
 
       {exceptions.length > 0 ? (
         <RowTable title="Needs review" rows={exceptions} highlight />
       ) : null}
-      {matched.length > 0 ? (
-        <RowTable title="Matched" rows={matched} />
-      ) : null}
+      {matched.length > 0 ? <RowTable title="Matched" rows={matched} /> : null}
 
       {data.nextActions.length > 0 ? (
-        <div className="border border-sh-border bg-sh-bg px-2.5 py-2">
-          <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
-            Next for the accountant
-          </p>
-          <ul className="mt-1.5 list-inside list-disc space-y-0.5 font-sans text-xs text-sh-text">
-            {data.nextActions.map((action) => (
-              <li key={action}>{action}</li>
-            ))}
-          </ul>
-        </div>
+        <ResultSection title="Next for the accountant">
+          <ActionList items={data.nextActions} icon={ListTodoIcon} />
+        </ResultSection>
       ) : null}
-    </div>
-  )
-}
-
-function Stat({
-  label,
-  value,
-  warn,
-}: {
-  label: string
-  value: string
-  warn?: boolean
-}) {
-  return (
-    <div className="border border-sh-border bg-sh-bg px-2 py-1.5">
-      <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
-        {label}
-      </p>
-      <p
-        className={cn(
-          "font-mono text-sm",
-          warn ? "text-(--sh-warning)" : "text-sh-text",
-        )}
-      >
-        {value}
-      </p>
     </div>
   )
 }
@@ -103,60 +102,66 @@ function RowTable({
   highlight?: boolean
 }) {
   return (
-    <div className="space-y-1">
-      <p className="font-mono text-[10px] uppercase tracking-wide text-sh-text-muted">
-        {title}
-      </p>
-      <Table>
-        <TableHeader>
-          <TableRow className="border-sh-border hover:bg-transparent">
-            <TableHead className="font-mono text-[10px]">Source</TableHead>
-            <TableHead className="font-mono text-[10px]">Description</TableHead>
-            <TableHead className="font-mono text-[10px]">Gross</TableHead>
-            <TableHead className="font-mono text-[10px]">Net</TableHead>
-            <TableHead className="font-mono text-[10px]">Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow
-              key={row.id}
-              className={cn(
-                "border-sh-border",
-                highlight &&
-                  row.status !== "matched" &&
-                  "border-l-2 border-l-(--sh-warning)",
-              )}
-            >
-              <TableCell className="font-mono text-xs capitalize">
-                {row.source}
-              </TableCell>
-              <TableCell className="max-w-[140px]">
-                <p className="truncate font-sans text-xs">{row.description}</p>
-                {row.exceptionReason ? (
-                  <p className="truncate font-mono text-[10px] text-sh-text-muted">
-                    {row.exceptionReason}
-                  </p>
-                ) : null}
-                {row.payoutDate || row.saleDate ? (
-                  <p className="font-mono text-[10px] text-sh-text-muted">
-                    {formatDate(row.saleDate ?? row.payoutDate)}
-                  </p>
-                ) : null}
-              </TableCell>
-              <TableCell className="font-mono text-xs">
-                {formatUsd(row.grossUsd)}
-              </TableCell>
-              <TableCell className="font-mono text-xs">
-                {formatUsd(row.netUsd)}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={row.status} />
-              </TableCell>
+    <ResultSection title={title} count={rows.length}>
+      <ResultTableFrame>
+        <Table className={resultTable.fixed}>
+          <TableHeader>
+            <TableRow className={resultTable.headRow}>
+              <TableHead className={cn(resultTable.head, "w-[110px]")}>
+                Source
+              </TableHead>
+              <TableHead className={resultTable.head}>Description</TableHead>
+              <TableHead className={cn(resultTable.head, "w-[120px] text-right")}>
+                Gross
+              </TableHead>
+              <TableHead className={cn(resultTable.head, "w-[120px] text-right")}>
+                Net
+              </TableHead>
+              <TableHead className={cn(resultTable.head, "w-[170px]")}>
+                Status
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className={cn(resultTable.row, highlight && resultTable.warnRow)}
+              >
+                <TableCell
+                  className={cn(resultTable.cell, "font-medium capitalize")}
+                >
+                  {row.source}
+                </TableCell>
+                <TableCell className={resultTable.cell}>
+                  <p className="truncate" title={row.description}>
+                    {row.description}
+                  </p>
+                  {row.exceptionReason ? (
+                    <p className="mt-0.5 truncate text-[12px] text-sh-warning">
+                      {row.exceptionReason}
+                    </p>
+                  ) : null}
+                  {row.payoutDate || row.saleDate ? (
+                    <p className={cn(resultTable.muted, "mt-0.5")}>
+                      {formatDate(row.saleDate ?? row.payoutDate)}
+                    </p>
+                  ) : null}
+                </TableCell>
+                <TableCell className={resultTable.num}>
+                  {formatUsd(row.grossUsd)}
+                </TableCell>
+                <TableCell className={cn(resultTable.num, "font-semibold")}>
+                  {formatUsd(row.netUsd)}
+                </TableCell>
+                <TableCell className={resultTable.cell}>
+                  <StatusBadge status={row.status} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </ResultTableFrame>
+    </ResultSection>
   )
 }

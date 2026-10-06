@@ -54,7 +54,7 @@ function formatQuotaExceededMessage(text: string): string | null {
     message += ` for ${model}`
   }
   if (limit) {
-    message += ` — limit ${limit} requests`
+    message += ` (limit ${limit} requests)`
   }
   if (retrySec) {
     message += `. Try again in about ${retrySec} seconds`

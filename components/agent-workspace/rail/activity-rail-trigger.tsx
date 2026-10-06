@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { ActivityIcon } from "lucide-react"
 
 type ActivityRailTriggerProps = {
@@ -16,14 +15,11 @@ export function ActivityRailTrigger({
   return (
     <Button
       type="button"
-      variant={active ? "default" : "secondary"}
+      variant={active ? "default" : "outline"}
       size="xs"
       aria-label={active ? "Hide activity" : "Show activity"}
       aria-pressed={active}
-      className={cn(
-        "gap-1.5 font-sans text-[12px] font-semibold",
-        !active && "bg-sh-surface text-sh-text ring-1 ring-sh-border hover:bg-sh-surface-raised",
-      )}
+      className="h-7 gap-1.5 px-2.5 text-[12px]"
       onClick={onToggle}
     >
       <ActivityIcon className="size-3.5 shrink-0" />

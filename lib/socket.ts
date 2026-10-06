@@ -3,7 +3,7 @@ import { io, type Socket } from "socket.io-client"
 import { getGatewayApiKey } from "@/lib/gateway-auth"
 import { isSessionActive, type ConnectionPhase } from "@/lib/types/agent"
 import { SERVER_INBOUND_EVENTS } from "@/lib/types/events"
-import { agentErrorToastCopy } from "@/lib/toast-copy"
+import { agentErrorToastCopy, connectionErrorToastCopy } from "@/lib/toast-copy"
 import { gooeyToast } from "@/components/ui/goey-toaster"
 import { stoppedSessionPatch, useAgentStore } from "@/store/agent.store"
 
@@ -13,8 +13,8 @@ let socket: Socket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let reconnectAttempt = 0
 let intentionalDisconnect = false
-let lastConnectErrorToastAt = 0
-const CONNECT_ERROR_TOAST_COOLDOWN_MS = 8_000
+/** One toast per outage; the connection banner covers the ongoing retry state. */
+let outageToastShown = false
 
 export function getBackendUrl(): string {
   const url = process.env.NEXT_PUBLIC_BACKEND_URL
@@ -78,6 +78,7 @@ function attachInboundListeners(activeSocket: Socket): void {
 function bindLifecycleListeners(activeSocket: Socket): void {
   activeSocket.on("connect", () => {
     reconnectAttempt = 0
+    outageToastShown = false
     clearReconnectTimer()
     patchConnectionState({
       socket: activeSocket,
@@ -98,9 +99,10 @@ function bindLifecycleListeners(activeSocket: Socket): void {
     const { status, pendingApproval } = useAgentStore.getState()
     if (isSessionActive(status)) {
       const message =
-        "Connection lost — the running task was stopped on the server. Start a new task to continue."
+        "Connection lost. The running task was stopped on the server. Start a new task to continue."
       const toast = agentErrorToastCopy(message, { fatal: true })
       gooeyToast.error(toast.title, { description: toast.description })
+      outageToastShown = true
       useAgentStore.setState({
         ...stoppedSessionPatch(),
         error: {
@@ -118,17 +120,16 @@ function bindLifecycleListeners(activeSocket: Socket): void {
 
   activeSocket.on("connect_error", (err: Error) => {
     const message = err.message || "Could not connect to the server"
-    const now = Date.now()
-    if (now - lastConnectErrorToastAt >= CONNECT_ERROR_TOAST_COOLDOWN_MS) {
-      lastConnectErrorToastAt = now
-      const toast = agentErrorToastCopy(message, { recoverable: true })
+    if (!outageToastShown) {
+      outageToastShown = true
+      const toast = connectionErrorToastCopy()
       gooeyToast.error(toast.title, { description: toast.description })
     }
     useAgentStore.setState({
       isConnected: false,
       error: {
         message,
-        timestamp: now,
+        timestamp: Date.now(),
         recoverable: true,
       },
     })
@@ -188,6 +189,7 @@ export function disconnectAgentSocket(): void {
   intentionalDisconnect = true
   clearReconnectTimer()
   reconnectAttempt = 0
+  outageToastShown = false
 
   socket?.removeAllListeners()
   socket?.disconnect()
