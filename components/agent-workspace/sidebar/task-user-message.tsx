@@ -34,7 +34,7 @@ export function TaskUserMessage({ content, className }: TaskUserMessageProps) {
     <article
       ref={articleRef}
       className={cn(
-        "relative max-h-24 overflow-hidden rounded-xl bg-sh-surface px-3 py-2.5 font-sans text-[12px] leading-snug tracking-tight text-sh-text",
+        "relative max-h-24 overflow-hidden rounded-xl bg-sh-surface px-3.5 py-3 font-sans text-[12.5px] leading-relaxed tracking-tight text-sh-text",
         className,
       )}
     >

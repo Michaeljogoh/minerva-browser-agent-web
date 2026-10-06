@@ -13,6 +13,7 @@ import {
 } from "@/lib/socket"
 import { agentErrorToastCopy, taskCompleteToastCopy } from "@/lib/toast-copy"
 import { gooeyToast } from "@/components/ui/goey-toaster"
+import { startTaskModel } from "@/store/model-settings.store"
 import {
   mergeTaskProgress,
   targetProgressForStepCount,
@@ -178,9 +179,11 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       taskProgress: TASK_PROGRESS.START,
     })
 
+    const model = startTaskModel()
     socket.emit("start_task", {
       goal: trimmedGoal,
       ...(taskType ? { taskType } : {}),
+      ...(model ? { model } : {}),
     })
   },
 

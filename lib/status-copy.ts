@@ -18,7 +18,7 @@ export function humanStatusLabel(
     case "running":
       return "Working"
     case "paused":
-      return "Paused — waiting on you"
+      return "Paused, waiting on you"
     case "complete":
       return "Done"
     case "error":
@@ -41,7 +41,7 @@ export function statusChipClass(status: AgentStatus): string {
     case "approval_pending":
       return "border-transparent bg-sh-warning-fill text-sh-warning"
     case "error":
-      return "border-transparent bg-sh-error/10 text-sh-error"
+      return "border-transparent bg-sh-error-fill text-sh-error"
     default:
       return "border-sh-border bg-sh-surface-raised text-sh-text-muted"
   }

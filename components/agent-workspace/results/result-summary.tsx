@@ -4,7 +4,10 @@ import { BankRecResultView } from "@/components/agent-workspace/results/bank-rec
 import { CommerceRecResultView } from "@/components/agent-workspace/results/commerce-rec-result"
 import { MonthEndResultView } from "@/components/agent-workspace/results/month-end-result"
 import { ReceiptChaseResultView } from "@/components/agent-workspace/results/receipt-chase-result"
-import { ResultMeta } from "@/components/agent-workspace/results/result-meta"
+import {
+  ResultFollowUps,
+  ResultMeta,
+} from "@/components/agent-workspace/results/result-meta"
 import { TaxDeltaResultView } from "@/components/agent-workspace/results/tax-delta-result"
 import type {
   BankRecDiffResult,
@@ -82,9 +85,10 @@ export function ResultSummary({ hideMeta = false }: ResultSummaryProps) {
   }
 
   return (
-    <div className="max-h-none space-y-4">
+    <div className="flex flex-col gap-9">
       {hideMeta ? null : <ResultMeta result={result} />}
       <TaskResultBody result={result} />
+      {hideMeta ? null : <ResultFollowUps result={result} />}
     </div>
   )
 }

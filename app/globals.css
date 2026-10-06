@@ -54,7 +54,10 @@
   --color-sh-warning-fill: var(--sh-warning-fill);
   --color-sh-success-fill: var(--sh-success-fill);
   --color-sh-error: var(--sh-error);
+  --color-sh-error-fill: var(--sh-error-fill);
+  --color-sh-on-error: var(--sh-on-error);
   --color-sh-primary: var(--sh-primary);
+  --color-sh-primary-hover: var(--sh-primary-hover);
   --color-sh-on-primary: var(--sh-on-primary);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -64,11 +67,12 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   --ease-premium: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-snappy: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* ── Browser Agents tokens — Pinecone-inspired knowledge platform ──
-   Light: cool paper + deep ink + solid pine CTA
-   Dark: OLED charcoal + luminous pine — same roles, matched contrast
+/* ── Browser Agents tokens ──
+   Light: cool paper + deep ink + solid emerald CTA (white text passes AA)
+   Dark: near-black charcoal + luminous emerald, same roles, matched contrast
 */
 
 :root {
@@ -76,25 +80,27 @@
   --agent-rail-width: 280px;
   --header-height: 44px;
 
-  --sh-bg: #f6f8f7;
-  --sh-surface: #eef2f0;
+  --sh-bg: #f7f8f8;
+  --sh-surface: #eff2f1;
   --sh-surface-raised: #ffffff;
-  --sh-text: #0a0f0d;
-  --sh-text-muted: #5b6b64;
-  --sh-border: #dce4df;
-  /* Brand pine — solid CTAs (Pinecone-class) */
-  --sh-accent-green: #00a67e;
-  --sh-accent-green-ink: #008f6b;
+  --sh-text: #0c1210;
+  --sh-text-muted: #5a6762;
+  --sh-border: #e2e7e4;
+  --sh-accent-green: #047857;
+  --sh-accent-green-ink: #065f46;
   --sh-on-primary: #ffffff;
-  --sh-accent-link: #00a67e;
+  --sh-accent-link: #047857;
   /* Human / interactive chrome shares brand green for one system */
-  --sh-steer: #00a67e;
-  --sh-steer-fill: #e6f7f1;
-  --sh-primary: #00a67e;
+  --sh-steer: #047857;
+  --sh-steer-fill: #e8f5ef;
+  --sh-primary: #047857;
+  --sh-primary-hover: #065f46;
   --sh-error: #dc2626;
+  --sh-error-fill: #fdeeee;
+  --sh-on-error: #ffffff;
   --sh-warning: #b45309;
-  --sh-warning-fill: #fff7ed;
-  --sh-success-fill: #e6f7f1;
+  --sh-warning-fill: #fff4e5;
+  --sh-success-fill: #e8f5ef;
   --sh-grid: rgba(10, 15, 13, 0.045);
 
   --background: var(--sh-bg);
@@ -133,23 +139,26 @@
 }
 
 .dark {
-  --sh-bg: #070a09;
-  --sh-surface: #101614;
-  --sh-surface-raised: #171e1b;
-  --sh-text: #f1f5f3;
-  --sh-text-muted: #8b9a93;
-  --sh-border: #24302b;
-  --sh-accent-green: #1ed9a8;
-  --sh-accent-green-ink: #1ed9a8;
-  --sh-on-primary: #04110c;
-  --sh-accent-link: #1ed9a8;
-  --sh-steer: #1ed9a8;
-  --sh-steer-fill: #0d2a22;
-  --sh-primary: #1ed9a8;
+  --sh-bg: #090c0b;
+  --sh-surface: #101513;
+  --sh-surface-raised: #161c19;
+  --sh-text: #eef3f0;
+  --sh-text-muted: #8f9d96;
+  --sh-border: #232d29;
+  --sh-accent-green: #34d399;
+  --sh-accent-green-ink: #34d399;
+  --sh-on-primary: #04231a;
+  --sh-accent-link: #34d399;
+  --sh-steer: #34d399;
+  --sh-steer-fill: #0f2a21;
+  --sh-primary: #34d399;
+  --sh-primary-hover: #6ee7b7;
   --sh-error: #f87171;
+  --sh-error-fill: #2a1315;
+  --sh-on-error: #2a0707;
   --sh-warning: #fbbf24;
-  --sh-warning-fill: #3a2a0a;
-  --sh-success-fill: #0d2a22;
+  --sh-warning-fill: #2e2108;
+  --sh-success-fill: #0f2a21;
   --sh-grid: rgba(241, 245, 243, 0.04);
 
   --background: var(--sh-bg);
@@ -218,24 +227,202 @@
   }
 }
 
+@keyframes sh-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sh-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sh-sheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes sh-live-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
 .motion-card-enter {
-  animation: sh-card-enter 160ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation: sh-card-enter 180ms var(--ease-snappy) both;
 }
 
 .motion-dock-enter {
-  animation: sh-dock-enter 180ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation: sh-dock-enter 220ms var(--ease-snappy) both;
 }
 
 .motion-crossfade {
-  animation: sh-crossfade 200ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation: sh-crossfade 200ms var(--ease-snappy) both;
+}
+
+.motion-rise {
+  animation: sh-rise 320ms var(--ease-snappy) both;
+}
+
+.motion-pop {
+  animation: sh-pop 360ms var(--ease-snappy) 80ms both;
+}
+
+/* Report sections cascade in; capped so long reports never feel slow. */
+.motion-stagger > * {
+  animation: sh-rise 320ms var(--ease-snappy) both;
+}
+.motion-stagger > :nth-child(1) { animation-delay: 60ms; }
+.motion-stagger > :nth-child(2) { animation-delay: 100ms; }
+.motion-stagger > :nth-child(3) { animation-delay: 140ms; }
+.motion-stagger > :nth-child(4) { animation-delay: 180ms; }
+.motion-stagger > :nth-child(5) { animation-delay: 220ms; }
+.motion-stagger > :nth-child(n + 6) { animation-delay: 260ms; }
+
+/* Moving highlight on the progress indicator while the agent is working. */
+.motion-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.motion-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.55),
+    transparent
+  );
+  animation: sh-sheen 1.6s linear infinite;
+}
+
+/* Live indicator: a solid dot with a single expanding ring. */
+.motion-live-dot {
+  position: relative;
+}
+.motion-live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: sh-live-ping 1.8s var(--ease-snappy) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .motion-card-enter,
   .motion-dock-enter,
-  .motion-crossfade {
+  .motion-rise,
+  .motion-pop,
+  .motion-stagger > * {
     animation: none;
   }
+  .motion-crossfade {
+    animation-duration: 120ms;
+    animation-timing-function: ease;
+  }
+  .motion-sheen::after,
+  .motion-live-dot::after {
+    display: none;
+  }
+}
+
+/* ── Toasts (goey-toast) mapped onto the workspace tokens ── */
+.gooey-wrapper {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+.gooey-wrapper .gooey-blobSvg path {
+  fill: var(--sh-surface-raised);
+  stroke: var(--sh-border);
+  stroke-width: 1px;
+}
+.gooey-wrapper .gooey-blobSvg,
+.gooey-wrapper[data-theme="dark"] .gooey-blobSvg {
+  filter: drop-shadow(0 10px 24px rgb(12 18 16 / 0.12))
+    drop-shadow(0 2px 6px rgb(12 18 16 / 0.06));
+}
+.gooey-wrapper[data-theme="dark"] .gooey-blobSvg {
+  filter: drop-shadow(0 10px 24px rgb(0 0 0 / 0.45));
+}
+.gooey-wrapper .gooey-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.gooey-wrapper .gooey-titleDefault,
+.gooey-wrapper .gooey-titleLoading,
+.gooey-wrapper[data-theme="dark"] .gooey-titleDefault,
+.gooey-wrapper[data-theme="dark"] .gooey-titleLoading {
+  color: var(--sh-text);
+}
+.gooey-wrapper .gooey-titleSuccess,
+.gooey-wrapper .gooey-titleInfo,
+.gooey-wrapper[data-theme="dark"] .gooey-titleSuccess,
+.gooey-wrapper[data-theme="dark"] .gooey-titleInfo {
+  color: var(--sh-accent-green);
+}
+.gooey-wrapper .gooey-titleError,
+.gooey-wrapper[data-theme="dark"] .gooey-titleError {
+  color: var(--sh-error);
+}
+.gooey-wrapper .gooey-titleWarning,
+.gooey-wrapper[data-theme="dark"] .gooey-titleWarning {
+  color: var(--sh-warning);
+}
+.gooey-wrapper .gooey-description,
+.gooey-wrapper[data-theme="dark"] .gooey-description {
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--sh-text-muted);
+}
+.gooey-wrapper .gooey-actionButton,
+.gooey-wrapper[data-theme="dark"] .gooey-actionButton {
+  background: var(--sh-primary);
+  color: var(--sh-on-primary);
+  font-weight: 600;
+}
+.gooey-wrapper .gooey-actionButton:hover,
+.gooey-wrapper[data-theme="dark"] .gooey-actionButton:hover {
+  background: var(--sh-primary-hover);
+}
+.gooey-wrapper .gooey-progressSuccess,
+.gooey-wrapper .gooey-progressInfo,
+.gooey-wrapper[data-theme="dark"] .gooey-progressSuccess,
+.gooey-wrapper[data-theme="dark"] .gooey-progressInfo {
+  background: var(--sh-accent-green);
+}
+.gooey-wrapper .gooey-progressError,
+.gooey-wrapper[data-theme="dark"] .gooey-progressError {
+  background: var(--sh-error);
+}
+.gooey-wrapper .gooey-progressWarning,
+.gooey-wrapper[data-theme="dark"] .gooey-progressWarning {
+  background: var(--sh-warning);
 }
 
 @layer base {

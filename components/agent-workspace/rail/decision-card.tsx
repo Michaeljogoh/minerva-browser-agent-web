@@ -33,7 +33,7 @@ const typeVisual: Record<ReasoningStep["type"], TypeVisual> = {
   error: {
     label: "Problem",
     node: "size-2.5 bg-sh-error",
-    labelClass: "bg-sh-error text-white",
+    labelClass: "bg-sh-error text-sh-on-error",
     filledLabel: true,
   },
   approval: {
@@ -80,14 +80,14 @@ export function DecisionCard({ step, className }: DecisionCardProps) {
         className={cn(
           "rounded-xl border border-sh-border bg-sh-surface-raised px-3.5 py-3",
           "transition-[border-color,background-color] duration-150 ease-out",
-          step.type === "error" && "border-sh-error/25 bg-sh-error/5",
+          step.type === "error" && "border-sh-error/25 bg-sh-error-fill",
           step.type === "approval" && "border-sh-warning/30 bg-sh-warning-fill/80",
         )}
       >
         <div className="flex items-start justify-between gap-2">
           <span
             className={cn(
-              "font-sans text-[11px] font-medium tracking-wide",
+              "font-sans text-[11px] font-semibold tracking-wide",
               visual.filledLabel
                 ? "inline-flex items-center rounded-full px-2 py-0.5"
                 : "pt-0.5",

@@ -34,15 +34,15 @@ export function TaskRailTrigger({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className={cn("rounded-full text-sh-text", open && "bg-sh-surface")}
+            className={cn("rounded-full text-sh-text", open && "bg-sh-surface text-sh-accent-green")}
             aria-label={open ? `Hide ${label.toLowerCase()} panel` : `Show ${label.toLowerCase()} panel`}
             aria-pressed={open}
             onClick={onToggle}
           >
             {isAgent ? (
-              <BrainCircuitIcon className="size-5" />
+              <BrainCircuitIcon className="size-[18px]" />
             ) : (
-              <BotMessageSquareIcon className="size-5" />
+              <BotMessageSquareIcon className="size-[18px]" />
             )}
           </Button>
         }
@@ -50,7 +50,7 @@ export function TaskRailTrigger({
       <TooltipContent
         side="bottom"
         showArrow={false}
-        className="rounded-none border border-sh-border bg-sh-surface px-2.5 py-1.5 font-sans text-xs text-sh-text shadow-none"
+        className="rounded-lg border border-sh-border bg-sh-surface-raised px-2.5 py-1.5 font-sans text-xs text-sh-text"
       >
         Toggle {label} ({shortcut})
       </TooltipContent>

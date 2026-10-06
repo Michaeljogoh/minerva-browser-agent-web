@@ -1,3 +1,4 @@
+import type { ExternalModelConfig } from "@/lib/external-model"
 import type { TaskResult, TaskType } from "@/lib/types/task-results"
 
 /** Client → server (api/docs/backend-prd.md §12) */
@@ -6,6 +7,7 @@ export interface StartTaskPayload {
   goal: string
   taskType?: TaskType
   usePlanner?: boolean
+  model?: ExternalModelConfig
 }
 
 export interface ApproveActionPayload {

@@ -15,7 +15,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { humanStatusLabel } from "@/lib/status-copy"
+import { humanStatusLabel, statusChipClass } from "@/lib/status-copy"
 import { cn } from "@/lib/utils"
 import { useAgentStore } from "@/store/agent.store"
 
@@ -56,9 +56,15 @@ function TaskSidebarContent({
             open={agentModeActive}
             onToggle={onAgentRailToggle}
           />
-          <p className="font-sans text-[12px] font-semibold text-sh-text">Job</p>
+          <p className="font-sans text-[13px] font-semibold text-sh-text">Job</p>
           {showHint ? (
-            <span className="truncate rounded-full bg-sh-steer-fill px-2 py-0.5 font-sans text-[11px] text-sh-steer">
+            <span
+              key={headerHint}
+              className={cn(
+                "motion-crossfade truncate rounded-full px-2 py-0.5 font-sans text-[11px] font-semibold",
+                statusChipClass(status),
+              )}
+            >
               {headerHint}
             </span>
           ) : null}
@@ -75,19 +81,19 @@ function TaskSidebarContent({
         </div>
       </div>
 
-      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto p-3 font-sans text-[13px]">
+      <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto p-4 font-sans text-[13px]">
         {isComposing ? null : (
           <>
             {showEmptyState ? <TaskDemoPicker /> : null}
             {showSubmittedPrompt ? (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 <TaskUserMessage content={submittedGoal.trim()} />
                 <TaskChatTimeline />
               </div>
             ) : null}
             {status === "complete" ? (
-              <p className={cn("font-sans text-[12px] text-sh-text-muted", showSubmittedPrompt && "mt-3")}>
-                Open the report in the main view to review numbers before anything is posted.
+              <p className={cn("font-sans text-[12px] leading-relaxed text-sh-text-muted", showSubmittedPrompt && "mt-4")}>
+                Review the numbers in the Report tab before anything is posted.
               </p>
             ) : null}
           </>

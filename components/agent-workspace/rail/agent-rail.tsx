@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useTimelineScroll } from "@/hooks/use-timeline-scroll"
 import { cn } from "@/lib/utils"
 import { useAgentStore } from "@/store/agent.store"
+import { ActivityIcon, ArrowDownIcon } from "lucide-react"
 import * as React from "react"
 
 export type LeftRailMode = "agent" | "sessions"
@@ -58,11 +59,11 @@ function AgentTimelineContent({
       <div className="flex h-(--header-height) shrink-0 items-center justify-between border-b border-sh-border px-3">
         <div className="flex min-w-0 items-center gap-1">
           <AgentRailTrigger open onToggle={onToggle} />
-          <p className="font-sans text-[13px] font-medium text-sh-text">
+          <p className="font-sans text-[13px] font-semibold text-sh-text">
             Activity
           </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-sh-surface px-2 py-0.5 font-sans text-[11px] tabular-nums text-sh-text-muted">
+        <span className="inline-flex h-6 items-center rounded-full bg-sh-surface px-2.5 font-sans text-[11.5px] font-medium tabular-nums text-sh-text-muted">
           {currentStep > 0 ? `Move ${currentStep}` : "Waiting"}
         </span>
       </div>
@@ -92,8 +93,8 @@ function AgentTimelineContent({
                   "transition-[background-color,color,transform] duration-150 ease-out",
                   "active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-sh-steer/40",
                   active
-                    ? "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]"
-                    : "text-sh-text-muted hover:text-sh-text",
+                    ? "bg-primary text-primary-foreground"
+                    : "cursor-pointer text-sh-text-muted hover:text-sh-text",
                 )}
                 onClick={() => setFilter(value)}
               >
@@ -132,8 +133,8 @@ function AgentTimelineContent({
           >
             {filtered.length === 0 ? (
               <li className="flex min-h-40 flex-col items-center justify-center px-4 text-center">
-                <span className="mb-2 inline-flex size-8 items-center justify-center rounded-full bg-sh-surface ring-1 ring-sh-border">
-                  <span className="size-1.5 rounded-full bg-sh-steer" />
+                <span className="mb-3 inline-flex size-9 items-center justify-center rounded-xl bg-sh-steer-fill text-sh-accent-green">
+                  <ActivityIcon className="size-4" aria-hidden />
                 </span>
                 <p className="font-sans text-[13px] text-sh-text">
                   Waiting for the first move
@@ -153,14 +154,17 @@ function AgentTimelineContent({
         </div>
 
         {showNewPill ? (
-          <Button
-            type="button"
-            size="xs"
-            className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 font-sans text-[12px] text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[color-mix(in_srgb,var(--primary),#000_8%)] active:scale-[0.97] dark:hover:bg-[color-mix(in_srgb,var(--primary),#fff_12%)]"
-            onClick={scrollToBottom}
-          >
-            New messages
-          </Button>
+          <div className="motion-dock-enter absolute bottom-3 left-1/2 -translate-x-1/2">
+            <Button
+              type="button"
+              size="xs"
+              className="h-7 px-3 text-[12px] shadow-lg shadow-black/15"
+              onClick={scrollToBottom}
+            >
+              <ArrowDownIcon data-icon="inline-start" />
+              New activity
+            </Button>
+          </div>
         ) : null}
       </div>
     </div>

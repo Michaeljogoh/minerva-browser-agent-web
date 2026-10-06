@@ -43,13 +43,20 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onBackdropClick,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
+  onBackdropClick?: () => void
 }) {
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay
+        onPointerDown={(event) => {
+          if (event.target !== event.currentTarget) return
+          onBackdropClick?.()
+        }}
+      />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(

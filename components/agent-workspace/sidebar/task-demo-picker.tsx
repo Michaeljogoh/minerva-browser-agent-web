@@ -5,6 +5,7 @@ import { isGoalEditable } from "@/lib/types/agent"
 import { cn } from "@/lib/utils"
 import { useAgentStore } from "@/store/agent.store"
 import {
+  ArrowRightIcon,
   ClipboardCheckIcon,
   ScaleIcon,
   Table2Icon,
@@ -23,17 +24,17 @@ export function TaskDemoPicker({ className }: { className?: string }) {
   const editable = isGoalEditable(status)
 
   return (
-    <div className={cn("flex flex-col gap-3", className)}>
+    <div className={cn("flex flex-col gap-4", className)}>
       <div className="space-y-1.5 px-0.5">
-        <p className="font-sans text-[12px] font-semibold leading-snug tracking-tight text-sh-text">
+        <p className="font-sans text-[14px] font-semibold leading-snug tracking-tight text-sh-text">
           Pick a job you already do
         </p>
-        <p className="font-sans text-[11px] leading-relaxed text-sh-text-muted">
+        <p className="font-sans text-[12px] leading-relaxed text-sh-text-muted">
           Watch every site it opens. Pause, steer, or take over to sign in.
           Nothing posts, files, or refunds without you.
         </p>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="motion-stagger flex flex-col gap-2.5">
         {TASK_TEMPLATES.map((template) => {
           const Icon = DEMO_ICONS[template.id as keyof typeof DEMO_ICONS] ?? ScaleIcon
           return (
@@ -45,20 +46,24 @@ export function TaskDemoPicker({ className }: { className?: string }) {
                 setGoal(template.goal)
                 setTaskType(template.taskType)
               }}
-              className="group rounded-2xl border border-sh-border bg-sh-surface-raised px-3 py-3 text-left shadow-[0_1px_0_rgba(10,15,13,0.03)] transition-[border-color,background-color,box-shadow] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-sh-steer/40 hover:bg-sh-steer-fill/50 hover:shadow-[0_8px_24px_-16px_rgba(0,166,126,0.45)] focus-visible:ring-2 focus-visible:ring-sh-steer/35 disabled:opacity-50 dark:shadow-none dark:hover:shadow-none"
+              className="group cursor-pointer rounded-2xl border border-sh-border bg-sh-surface-raised p-3.5 text-left transition-[border-color,background-color,transform] duration-150 ease-out hover:border-[color-mix(in_srgb,var(--sh-border),var(--sh-accent-green)_45%)] active:scale-[0.985] focus-visible:ring-2 focus-visible:ring-sh-steer/35 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
             >
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-sh-steer-fill text-sh-steer">
-                  <Icon className="size-3.5" aria-hidden />
+              <div className="flex items-start gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sh-steer-fill text-sh-accent-green transition-colors duration-150 group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Icon className="size-4" aria-hidden />
                 </span>
-                <span className="min-w-0">
-                  <span className="block font-sans text-[12px] font-medium tracking-tight text-sh-text">
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center justify-between gap-2 font-sans text-[13px] font-semibold tracking-tight text-sh-text">
                     {template.label}
+                    <ArrowRightIcon
+                      className="size-3.5 shrink-0 -translate-x-1 text-sh-accent-green opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:translate-x-0 group-hover:opacity-100"
+                      aria-hidden
+                    />
                   </span>
-                  <span className="mt-0.5 block font-sans text-[11px] leading-snug text-sh-text-muted">
+                  <span className="mt-1 block font-sans text-[12px] leading-snug text-sh-text-muted">
                     {template.description}
                   </span>
-                  <span className="mt-1.5 block font-sans text-[11px] text-sh-steer">
+                  <span className="mt-2 block font-sans text-[11.5px] font-medium text-sh-accent-green">
                     {template.outcome}
                   </span>
                 </span>

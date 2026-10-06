@@ -87,7 +87,7 @@ export function TaskChatComposer({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "shrink-0 border-t border-sh-border bg-sh-bg p-3",
+        "shrink-0 border-t border-sh-border bg-sh-bg p-4",
         className,
       )}
     >
@@ -98,7 +98,13 @@ export function TaskChatComposer({ className }: { className?: string }) {
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-sh-border bg-sh-surface-raised shadow-[0_1px_0_rgba(10,15,13,0.04)] dark:shadow-none">
+      <div
+        className={cn(
+          "rounded-2xl border border-sh-border bg-sh-surface-raised transition-[border-color,box-shadow] duration-150 ease-out",
+          "focus-within:border-[color-mix(in_srgb,var(--sh-border),var(--sh-accent-green)_55%)] focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--sh-accent-green)_12%,transparent)]",
+          goalError && !canSteer && "border-sh-error/50",
+        )}
+      >
         <Textarea
           value={canSteer ? guidance : goal}
           onChange={(e) => {
@@ -125,8 +131,7 @@ export function TaskChatComposer({ className }: { className?: string }) {
             }
           }}
           className={cn(
-            "min-h-16 resize-none rounded-none border-0 bg-transparent px-3 pt-3 pb-1.5 font-sans text-[13px] leading-relaxed text-sh-text shadow-none placeholder:text-sh-text-muted focus-visible:ring-0 focus-visible:ring-offset-0",
-            goalError && !canSteer && "text-sh-error",
+            "min-h-16 resize-none rounded-none border-0 bg-transparent px-3.5 pt-3.5 pb-1.5 font-sans text-[13px] leading-relaxed text-sh-text shadow-none placeholder:text-sh-text-muted focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-transparent",
           )}
           placeholder={
             canSteer
@@ -147,7 +152,7 @@ export function TaskChatComposer({ className }: { className?: string }) {
               <Button
                 type="button"
                 size="sm"
-                className="h-8 px-3.5"
+                className="h-8 px-3.5 text-[12.5px]"
                 disabled={primaryDisabled}
                 aria-label={primaryLabel}
                 onClick={handlePrimaryAction}
@@ -161,7 +166,7 @@ export function TaskChatComposer({ className }: { className?: string }) {
       </div>
 
       {goalError && !canSteer ? (
-        <p role="alert" className="mt-2 font-sans text-[12px] text-sh-error">
+        <p role="alert" className="motion-crossfade mt-2 font-sans text-[12px] text-sh-error">
           {goalError}
         </p>
       ) : null}

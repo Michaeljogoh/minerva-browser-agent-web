@@ -4,7 +4,7 @@ import type {
   SessionRecordSummary,
 } from "@/lib/types/session-record"
 
-function backendBaseUrl(): string {
+export function backendBaseUrl(): string {
   const url = process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/$/, "")
   if (!url) {
     throw new Error("NEXT_PUBLIC_BACKEND_URL is not configured")

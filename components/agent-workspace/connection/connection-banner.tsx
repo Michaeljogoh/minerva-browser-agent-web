@@ -26,7 +26,7 @@ export function ConnectionBanner() {
       {showReconnecting ? <Spinner className="size-3.5 text-sh-warning" /> : null}
       <p className="font-sans text-[13px] text-sh-text">
         {showReconnecting
-          ? "Connection lost — reconnecting…"
+          ? "Connection lost. Reconnecting…"
           : "Disconnected. You can still read the timeline until we’re back."}
       </p>
       {currentStep > 0 ? (
