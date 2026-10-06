@@ -1,7 +1,8 @@
 "use client"
 
 import type { ReasoningStep } from "@/lib/types/agent"
-import { humanStepLabel } from "@/lib/step-copy"
+import { humanStepLabel, stepHost } from "@/lib/step-copy"
+import { GlobeIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type TypeVisual = {
@@ -52,15 +53,20 @@ const typeVisual: Record<ReasoningStep["type"], TypeVisual> = {
 
 type DecisionCardProps = {
   step: ReasoningStep
+  /** The step the agent is on right now; gets the accent treatment. */
+  latest?: boolean
   className?: string
 }
 
-export function DecisionCard({ step, className }: DecisionCardProps) {
+export function DecisionCard({ step, latest, className }: DecisionCardProps) {
   const visual = typeVisual[step.type]
   const headline = humanStepLabel(step)
   const durationMs = step.metadata?.executionTimeMs
   const observationFailed =
     step.type === "observation" && step.metadata?.confidence === 0
+
+  const host = stepHost(step)
+  const compact = step.type === "reasoning" && !latest
 
   const ariaLine = observationFailed ? `Couldn’t finish: ${headline}` : headline
 
@@ -74,11 +80,15 @@ export function DecisionCard({ step, className }: DecisionCardProps) {
         className={cn(
           "absolute top-1/2 left-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-[3px] ring-sh-bg",
           visual.node,
+          latest && "animate-pulse",
         )}
       />
       <div
         className={cn(
           "rounded-xl border border-sh-border bg-sh-surface-raised px-3.5 py-3",
+          compact && "bg-transparent py-2 opacity-70",
+          latest &&
+            "border-primary/40 shadow-[0_8px_24px_-16px_rgba(4,120,87,0.5)]",
           "transition-[border-color,background-color] duration-150 ease-out",
           step.type === "error" && "border-sh-error/25 bg-sh-error-fill",
           step.type === "approval" && "border-sh-warning/30 bg-sh-warning-fill/80",
@@ -107,9 +117,21 @@ export function DecisionCard({ step, className }: DecisionCardProps) {
           </time>
         </div>
 
-        <p className="mt-2 font-sans text-[13px] leading-snug text-sh-text">
+        <p
+          className={cn(
+            "font-sans leading-snug text-sh-text",
+            compact ? "mt-1 text-[12px] text-sh-text-muted" : "mt-2 text-[13px]",
+          )}
+        >
           {observationFailed ? `Couldn’t finish: ${headline}` : headline}
         </p>
+
+        {host ? (
+          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-sh-surface px-2 py-0.5 font-mono text-[11px] text-sh-text-muted">
+            <GlobeIcon className="size-3" aria-hidden />
+            {host}
+          </span>
+        ) : null}
 
         {step.type === "screenshot" && step.screenshotUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -123,7 +145,7 @@ export function DecisionCard({ step, className }: DecisionCardProps) {
         ) : null}
 
         {durationMs != null ? (
-          <p className="mt-2 font-sans text-[11px] tabular-nums text-sh-text-muted">
+          <p className="mt-2 inline-flex rounded-full bg-sh-surface px-2 py-0.5 font-mono text-[10.5px] tabular-nums text-sh-text-muted">
             {(durationMs / 1000).toFixed(1)}s
           </p>
         ) : null}

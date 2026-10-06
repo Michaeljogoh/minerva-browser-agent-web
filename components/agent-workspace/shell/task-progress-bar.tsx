@@ -66,7 +66,7 @@ export function TaskProgressBar() {
         ? "bg-sh-error"
         : status === "paused" || status === "approval_pending"
           ? "bg-sh-warning"
-          : "bg-primary"
+          : "bg-gradient-to-r from-sh-accent-green to-emerald-400"
 
   return (
     <div
@@ -80,7 +80,7 @@ export function TaskProgressBar() {
       <Progress value={value} className="gap-0">
         <ProgressTrack
           className={cn(
-            "h-1 rounded-none bg-sh-border",
+            "h-1.5 rounded-none bg-sh-border",
             (status === "paused" || status === "approval_pending") &&
               "opacity-90",
           )}

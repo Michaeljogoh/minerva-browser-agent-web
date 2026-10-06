@@ -12,7 +12,10 @@ import { AgentRailTrigger } from "@/components/agent-workspace/rail/agent-rail-t
 import { DecisionCard } from "@/components/agent-workspace/rail/decision-card"
 import { SessionsPanel } from "@/components/agent-workspace/rail/sessions-panel"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useRunClock } from "@/components/agent-workspace/status/use-run-clock"
 import { useTimelineScroll } from "@/hooks/use-timeline-scroll"
+import { formatElapsed } from "@/lib/run-phase"
+import { humanStatusLabel, statusChipClass } from "@/lib/status-copy"
 import { cn } from "@/lib/utils"
 import { useAgentStore } from "@/store/agent.store"
 import { ActivityIcon, ArrowDownIcon } from "lucide-react"
@@ -46,13 +49,28 @@ function AgentTimelineContent({
   const replayVisibleSteps = useAgentStore((s) => s.replayVisibleSteps)
   const currentStep = useAgentStore((s) => s.currentStep)
   const isConnected = useAgentStore((s) => s.isConnected)
+  const status = useAgentStore((s) => s.status)
+  const pendingApproval = useAgentStore((s) => s.pendingApproval)
+  const result = useAgentStore((s) => s.result)
+  const elapsed = useRunClock(status, result?.totalExecutionTimeMs)
+  const live = status === "connecting" || status === "running"
   const [filter, setFilter] = React.useState<Filter>("all")
   const { scrollRef, onScroll, scrollToBottom, showNewPill } =
     useTimelineScroll(steps.length)
 
-  const filtered = steps
-    .slice(0, replayActive ? replayVisibleSteps : steps.length)
-    .filter((step) => matchesFilter(step.type, filter))
+  const visibleSteps = steps.slice(
+    0,
+    replayActive ? replayVisibleSteps : steps.length,
+  )
+  const filtered = visibleSteps.filter((step) =>
+    matchesFilter(step.type, filter),
+  )
+  const counts: Record<Filter, number> = {
+    all: visibleSteps.length,
+    needs_you: visibleSteps.filter((s) => s.type === "approval").length,
+    problems: visibleSteps.filter((s) => s.type === "error").length,
+  }
+  const latestId = steps.at(-1)?.id
 
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
@@ -63,9 +81,31 @@ function AgentTimelineContent({
             Activity
           </p>
         </div>
-        <span className="inline-flex h-6 items-center rounded-full bg-sh-surface px-2.5 font-sans text-[11.5px] font-medium tabular-nums text-sh-text-muted">
-          {currentStep > 0 ? `Move ${currentStep}` : "Waiting"}
-        </span>
+        {status === "idle" ? (
+          <span className="inline-flex h-6 items-center rounded-full bg-sh-surface px-2.5 font-sans text-[11.5px] font-medium text-sh-text-muted">
+            Waiting
+          </span>
+        ) : (
+          <span
+            key={status}
+            className={cn(
+              "motion-crossfade inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 font-sans text-[11.5px] font-semibold tabular-nums",
+              statusChipClass(status),
+            )}
+          >
+            {live ? (
+              <span aria-hidden className="relative flex size-1.5">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+              </span>
+            ) : null}
+            {humanStatusLabel(status, pendingApproval)}
+            <span className="font-mono font-normal opacity-70">
+              {formatElapsed(elapsed)}
+              {currentStep > 0 ? ` · ${currentStep}` : ""}
+            </span>
+          </span>
+        )}
       </div>
 
       <div className="shrink-0 border-b border-sh-border p-2.5">
@@ -99,6 +139,16 @@ function AgentTimelineContent({
                 onClick={() => setFilter(value)}
               >
                 {label}
+                {counts[value] > 0 ? (
+                  <span
+                    className={cn(
+                      "ml-1 tabular-nums",
+                      active ? "opacity-80" : "text-sh-text-muted",
+                    )}
+                  >
+                    {counts[value]}
+                  </span>
+                ) : null}
               </button>
             )
           })}
@@ -128,7 +178,7 @@ function AgentTimelineContent({
             className={cn(
               "relative flex list-none flex-col gap-3",
               filtered.length > 0 &&
-                "before:absolute before:top-3 before:bottom-3 before:left-1.5 before:w-px before:border",
+                "before:absolute before:top-3 before:bottom-3 before:left-1.5 before:w-px before:bg-gradient-to-b before:from-sh-border before:via-sh-border before:to-transparent",
             )}
           >
             {filtered.length === 0 ? (
@@ -146,7 +196,10 @@ function AgentTimelineContent({
             ) : (
               filtered.map((step) => (
                 <li key={step.id}>
-                  <DecisionCard step={step} />
+                  <DecisionCard
+                    step={step}
+                    latest={step.id === latestId && live}
+                  />
                 </li>
               ))
             )}
