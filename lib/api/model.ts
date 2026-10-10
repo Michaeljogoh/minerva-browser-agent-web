@@ -4,7 +4,7 @@ import { gatewayAuthHeaders } from "@/lib/gateway-auth"
 
 export async function getModelOptions(): Promise<ExternalModelOptions> {
   const response = await fetch(`${backendBaseUrl()}/model/options`, {
-    headers: gatewayAuthHeaders(),
+    headers: await gatewayAuthHeaders(),
     cache: "no-store",
   })
 

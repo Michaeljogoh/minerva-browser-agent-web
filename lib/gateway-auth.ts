@@ -1,3 +1,5 @@
+import { getAuthToken } from "@/lib/auth-token"
+
 export const PLACEHOLDER_GATEWAY_API_KEY = "your-key-here"
 
 export function getGatewayApiKey(): string | undefined {
@@ -8,11 +10,15 @@ export function getGatewayApiKey(): string | undefined {
   return key
 }
 
-export function gatewayAuthHeaders(): HeadersInit {
-  const headers: HeadersInit = { Accept: "application/json" }
+export async function gatewayAuthHeaders(): Promise<HeadersInit> {
+  const headers: Record<string, string> = { Accept: "application/json" }
   const key = getGatewayApiKey()
   if (key) {
     headers["x-api-key"] = key
+  }
+  const token = await getAuthToken()
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
   }
   return headers
 }

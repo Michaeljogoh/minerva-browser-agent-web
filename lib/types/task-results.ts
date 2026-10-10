@@ -8,6 +8,7 @@ export type TaskType =
   | "commerce_reconciliation"
   | "bank_rec_diff"
   | "receipt_chase"
+  | "quick_answer"
 
 export interface TaxCodeDeltaBriefResult {
   query: {
@@ -141,16 +142,28 @@ export interface ReceiptChaseResult {
   }
 }
 
+export type TaskOutcome = "success" | "partial" | "failed"
+
+export interface QuickAnswerResult {
+  answer: string
+  facts: Array<{ label: string; value: string }>
+}
+
 export type TaskExtractedData =
   | MonthEndExceptionReport
   | TaxCodeDeltaBriefResult
   | CommerceReconciliationResult
   | BankRecDiffResult
   | ReceiptChaseResult
+  | QuickAnswerResult
 
 export interface TaskResult {
   taskType: TaskType
+  /** Markdown answer shown to the user. */
   summary: string
+  /** Absent on older saved results; treat as success. */
+  outcome?: TaskOutcome
+  failureReason?: string
   extractedData: TaskExtractedData
   followUpActions?: string[]
   completedAt: number

@@ -6,11 +6,8 @@ import {
   ArrowUpDownIcon,
   ArrowUpIcon,
   ChevronDownIcon,
-  CircleCheckIcon,
-  CircleXIcon,
   FileWarningIcon,
   LandmarkIcon,
-  ListChecksIcon,
   ListTodoIcon,
 } from "lucide-react"
 
@@ -26,9 +23,8 @@ import {
   ResultContext,
   ResultSection,
   ResultTableFrame,
-  StatGrid,
+  CountLine,
   resultTable,
-  toneWhen,
 } from "@/components/agent-workspace/results/result-primitives"
 import {
   Collapsible,
@@ -124,33 +120,15 @@ export function MonthEndResultView({ data }: MonthEndResultViewProps) {
         {data.closeStatus ? <StatusBadge status={data.closeStatus} /> : null}
       </ResultContext>
 
-      <StatGrid
+      <CountLine
         items={[
-          {
-            label: "Exceptions",
-            value: String(data.totals.exceptionCount),
-            icon: ListChecksIcon,
-          },
-          {
-            label: "Approved",
-            value: String(data.totals.approvedCount),
-            icon: CircleCheckIcon,
-            tone: "success",
-          },
-          {
-            label: "Rejected",
-            value: String(data.totals.rejectedCount),
-            icon: CircleXIcon,
-            tone: toneWhen(data.totals.rejectedCount, "error"),
-          },
-          {
-            label: "Tax flags",
-            value: String(data.totals.taxFlagCount),
-            icon: LandmarkIcon,
-            tone: toneWhen(data.totals.taxFlagCount, "warning"),
-          },
+          { label: "exceptions", value: data.totals.exceptionCount },
+          { label: "approved", value: data.totals.approvedCount, tone: "success" },
+          { label: "rejected", value: data.totals.rejectedCount, tone: "error" },
+          { label: "tax flags", value: data.totals.taxFlagCount, tone: "warning" },
         ]}
       />
+
 
       {hasBlockers || hasMissing ? (
         <div className="grid gap-6 lg:grid-cols-2">
@@ -174,6 +152,7 @@ export function MonthEndResultView({ data }: MonthEndResultViewProps) {
         </div>
       ) : null}
 
+      {sorted.length > 0 ? (
       <ResultSection title="Exceptions" count={sorted.length}>
         <ResultTableFrame>
           <Table>
@@ -239,6 +218,7 @@ export function MonthEndResultView({ data }: MonthEndResultViewProps) {
           </Table>
         </ResultTableFrame>
       </ResultSection>
+      ) : null}
 
       {data.checklist && data.checklist.length > 0 ? (
         <ResultSection title="Close checklist" count={data.checklist.length}>

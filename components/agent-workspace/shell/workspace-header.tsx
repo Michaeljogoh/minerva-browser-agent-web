@@ -1,8 +1,11 @@
 "use client"
 
+import { UserButton } from "@clerk/nextjs"
+
 import { BrandLogo } from "@/components/agent-workspace/shell/brand-logo"
 import { humanStatusLabel, statusChipClass } from "@/lib/status-copy"
 import { SessionControls } from "@/components/agent-workspace/shell/session-controls"
+import { ConnectedAppsDialog } from "@/components/agent-workspace/shell/connected-apps-dialog"
 import { ConnectionStatus } from "@/components/agent-workspace/connection/connection-status"
 import { ThemeToggle } from "@/components/agent-workspace/shell/theme-toggle"
 import { TaskRailTrigger } from "@/components/agent-workspace/sidebar/task-rail-trigger"
@@ -56,7 +59,9 @@ export function WorkspaceHeader({
         </div>
         <div className="ml-auto flex items-center gap-2">
           <SessionControls compact />
+          <ConnectedAppsDialog />
           <ThemeToggle />
+          <UserButton />
           <TaskRailTrigger open={taskRailOpen} onToggle={onTaskRailToggle} />
           <ConnectionStatus />
         </div>
