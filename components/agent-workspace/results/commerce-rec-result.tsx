@@ -1,12 +1,6 @@
 "use client"
 
-import {
-  BanknoteIcon,
-  CircleAlertIcon,
-  ListTodoIcon,
-  ReceiptIcon,
-  WalletIcon,
-} from "lucide-react"
+import { ListTodoIcon } from "lucide-react"
 
 import type { CommerceReconciliationResult } from "@/lib/types/task-results"
 import { StatusBadge } from "@/components/agent-workspace/results/result-badges"
@@ -15,9 +9,8 @@ import {
   ResultContext,
   ResultSection,
   ResultTableFrame,
-  StatGrid,
+  CountLine,
   resultTable,
-  toneWhen,
 } from "@/components/agent-workspace/results/result-primitives"
 import {
   Table,
@@ -51,37 +44,23 @@ export function CommerceRecResultView({ data }: CommerceRecResultViewProps) {
         ))}
       </ResultContext>
 
-      <StatGrid
+      <CountLine
         items={[
-          {
-            label: "Gross",
-            value: formatUsd(data.totals.grossUsd),
-            icon: BanknoteIcon,
-          },
-          {
-            label: "Fees",
-            value: formatUsd(data.totals.feeUsd),
-            icon: ReceiptIcon,
-          },
-          {
-            label: "Net payout",
-            value: formatUsd(data.totals.netUsd),
-            icon: WalletIcon,
-            tone: "success",
-          },
-          {
-            label: "Exceptions",
-            value: String(data.totals.exceptionCount),
-            icon: CircleAlertIcon,
-            tone: toneWhen(data.totals.exceptionCount, "warning"),
-          },
+          { label: "matched", value: data.totals.matchedCount, tone: "success" },
+          { label: "need review", value: data.totals.exceptionCount, tone: "warning" },
         ]}
       />
 
-      {exceptions.length > 0 ? (
-        <RowTable title="Needs review" rows={exceptions} highlight />
+      {data.rows.length > 1 ? (
+        <>
+          {exceptions.length > 0 ? (
+            <RowTable title="Needs review" rows={exceptions} highlight />
+          ) : null}
+          {matched.length > 0 ? (
+            <RowTable title="Matched" rows={matched} />
+          ) : null}
+        </>
       ) : null}
-      {matched.length > 0 ? <RowTable title="Matched" rows={matched} /> : null}
 
       {data.nextActions.length > 0 ? (
         <ResultSection title="Next for the accountant">

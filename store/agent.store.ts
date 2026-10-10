@@ -13,6 +13,7 @@ import {
 } from "@/lib/socket"
 import { agentErrorToastCopy, taskCompleteToastCopy } from "@/lib/toast-copy"
 import { gooeyToast } from "@/components/ui/goey-toaster"
+import { toolkitLabel } from "@/lib/toolkits"
 import { startTaskModel } from "@/store/model-settings.store"
 import {
   mergeTaskProgress,
@@ -25,6 +26,7 @@ import {
   parseAgentObservationPayload,
   parseAgentReasoningPayload,
   parseBrowserReadyPayload,
+  parseConnectionReadyPayload,
   parseHumanApprovalRequiredPayload,
   parseLiveViewPayload,
   parseScreenshotPayload,
@@ -361,6 +363,8 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           kind: parsed.kind,
           connectUrl: parsed.connectUrl,
           appName: parsed.appName,
+          inputLabel: parsed.inputLabel,
+          inputPlaceholder: parsed.inputPlaceholder,
         }
         set((state) => ({
           pendingApproval: approval,
@@ -372,6 +376,13 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
             content: parsed.question,
           }),
         }))
+        return
+      }
+
+      case "connection_ready": {
+        const parsed = parseConnectionReadyPayload(payload)
+        if (!parsed) return
+        gooeyToast.success(`${toolkitLabel(parsed.toolkit)} connected`)
         return
       }
 
@@ -424,9 +435,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         const parsed = parseTaskCompletePayload(payload)
         if (!parsed) return
         const successToast = taskCompleteToastCopy(parsed.data)
-        gooeyToast.success(successToast.title, {
-          description: successToast.description,
-        })
+        gooeyToast.success(successToast.title)
         set((state) => ({
           result: parsed.data,
           status: "complete",

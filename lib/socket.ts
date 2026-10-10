@@ -1,5 +1,6 @@
 import { io, type Socket } from "socket.io-client"
 
+import { getAuthToken } from "@/lib/auth-token"
 import { getGatewayApiKey } from "@/lib/gateway-auth"
 import { isSessionActive, type ConnectionPhase } from "@/lib/types/agent"
 import { SERVER_INBOUND_EVENTS } from "@/lib/types/events"
@@ -158,17 +159,21 @@ export function connectAgentSocket(): Socket {
   }
 
   if (!socket) {
-    const authToken = getGatewayApiKey()
+    const gatewayKey = getGatewayApiKey()
     socket = io(getBackendUrl(), {
       autoConnect: false,
       reconnection: false,
       transports: ["websocket", "polling"],
-      ...(authToken
-        ? {
-            auth: { token: authToken },
-            extraHeaders: { "x-api-key": authToken },
-          }
-        : {}),
+      // A function, so each (re)connect sends a fresh user token.
+      auth: (cb) => {
+        void getAuthToken().then((userToken) =>
+          cb({
+            ...(gatewayKey ? { token: gatewayKey } : {}),
+            ...(userToken ? { userToken } : {}),
+          }),
+        )
+      },
+      ...(gatewayKey ? { extraHeaders: { "x-api-key": gatewayKey } } : {}),
     })
 
     attachInboundListeners(socket)

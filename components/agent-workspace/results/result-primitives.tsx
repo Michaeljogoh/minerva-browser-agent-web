@@ -93,42 +93,37 @@ export function ResultContext({
   )
 }
 
-export type StatItem = {
+export type CountItem = {
   label: string
-  value: string
-  icon: LucideIcon
+  value: number
   tone?: ResultTone
 }
 
-const STAT_COLUMNS = {
-  3: "grid-cols-1 sm:grid-cols-3",
-  4: "grid-cols-2 xl:grid-cols-4",
-} as const
-
-export function StatGrid({ items }: { items: StatItem[] }) {
-  const columns = items.length >= 4 ? STAT_COLUMNS[4] : STAT_COLUMNS[3]
+/** One quiet line of counts, e.g. "3 exceptions · 1 approved". Zero counts are dropped. */
+export function CountLine({ items }: { items: CountItem[] }) {
+  const shown = items.filter((item) => item.value > 0)
+  if (shown.length === 0) {
+    return null
+  }
   return (
-    <dl className={cn("grid gap-3", columns)}>
-      {items.map(({ label, value, icon, tone = "neutral" }) => (
-        <div
-          key={label}
-          className="flex flex-col gap-3 rounded-xl border border-sh-border bg-sh-surface-raised p-4"
-        >
-          <dt className="flex items-center gap-2 text-[12px] font-medium text-sh-text-muted">
-            <IconTile icon={icon} tone={tone} className="size-6 rounded-md" />
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-sh-text-muted">
+      {shown.map(({ label, value, tone = "neutral" }, index) => (
+        <span key={label} className="inline-flex items-center gap-2">
+          {index > 0 ? <span aria-hidden>·</span> : null}
+          <span>
+            <span
+              className={cn(
+                "font-mono font-semibold tabular-nums",
+                TONE_TEXT[tone],
+              )}
+            >
+              {value}
+            </span>{" "}
             {label}
-          </dt>
-          <dd
-            className={cn(
-              "font-mono text-[20px] font-semibold tracking-tight tabular-nums",
-              TONE_TEXT[tone],
-            )}
-          >
-            {value}
-          </dd>
-        </div>
+          </span>
+        </span>
       ))}
-    </dl>
+    </p>
   )
 }
 

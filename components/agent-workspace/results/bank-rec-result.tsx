@@ -1,21 +1,13 @@
 "use client"
 
-import {
-  BookOpenIcon,
-  CircleCheckBigIcon,
-  GitCompareArrowsIcon,
-  LandmarkIcon,
-} from "lucide-react"
-
 import type { BankRecDiffResult } from "@/lib/types/task-results"
 import { StatusBadge } from "@/components/agent-workspace/results/result-badges"
 import {
   ResultContext,
   ResultSection,
   ResultTableFrame,
-  StatGrid,
+  CountLine,
   resultTable,
-  toneWhen,
 } from "@/components/agent-workspace/results/result-primitives"
 import {
   Table,
@@ -105,32 +97,12 @@ export function BankRecResultView({ data }: BankRecResultViewProps) {
   return (
     <div className="motion-stagger flex flex-col gap-8">
       <ResultContext clientName={data.clientName} period={data.period} />
-      <StatGrid
+      <CountLine
         items={[
-          {
-            label: "Bank only",
-            value: String(data.totals.bankOnlyCount),
-            icon: LandmarkIcon,
-            tone: toneWhen(data.totals.bankOnlyCount, "warning"),
-          },
-          {
-            label: "Books only",
-            value: String(data.totals.booksOnlyCount),
-            icon: BookOpenIcon,
-            tone: toneWhen(data.totals.booksOnlyCount, "warning"),
-          },
-          {
-            label: "Matched",
-            value: String(data.totals.matchedCount),
-            icon: GitCompareArrowsIcon,
-            tone: "success",
-          },
-          {
-            label: "Cleared",
-            value: String(data.totals.clearedCount),
-            icon: CircleCheckBigIcon,
-            tone: "success",
-          },
+          { label: "bank only", value: data.totals.bankOnlyCount, tone: "warning" },
+          { label: "books only", value: data.totals.booksOnlyCount, tone: "warning" },
+          { label: "matched", value: data.totals.matchedCount, tone: "success" },
+          { label: "cleared", value: data.totals.clearedCount, tone: "success" },
         ]}
       />
       {renderSection("Unmatched", grouped.unmatched, resultTable.errorRow)}

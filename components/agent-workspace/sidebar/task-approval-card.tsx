@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import {
   formatCountdown,
@@ -36,6 +37,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
   const [showModify, setShowModify] = React.useState(false)
   const [modifyAnswer, setModifyAnswer] = React.useState("")
   const [timedOut, setTimedOut] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState("")
 
   const remainingMs = useApprovalCountdown(pendingApproval?.timeoutAt ?? null)
 
@@ -45,6 +47,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
     if (pendingApproval) {
       setShowModify(false)
       setModifyAnswer("")
+      setInputValue("")
       setExpandedContext(false)
       setTimedOut(false)
     }
@@ -77,18 +80,22 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
   const kind = pendingApproval.kind ?? "approval"
   const isLogin = kind === "login"
   const isConnect = kind === "connect"
-  const isHandoff = isLogin || isConnect
+  const isConnectInput = kind === "connect_input"
+  const isHandoff = isLogin || isConnect || isConnectInput
   const title = isLogin
     ? "Your turn: sign in"
-    : isConnect
+    : isConnect || isConnectInput
       ? "Connect this app"
       : "Needs your review"
   const approveLabel = isLogin
     ? "I’m signed in"
     : isConnect
       ? "I’ve connected"
-      : "Approve"
-  const rejectLabel = isLogin || isConnect ? "Skip for now" : "Don’t do this"
+      : isConnectInput
+        ? "Continue"
+        : "Approve"
+  const rejectLabel =
+    isLogin || isConnect || isConnectInput ? "Skip for now" : "Don’t do this"
 
   const handleReject = () => {
     approveAction(false)
@@ -96,6 +103,13 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
   }
 
   const handleApprove = () => {
+    if (isConnectInput) {
+      const value = inputValue.trim()
+      if (!value) return
+      approveAction(true, value)
+      setShowModify(false)
+      return
+    }
     approveAction(true)
     setShowModify(false)
   }
@@ -137,7 +151,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
           >
             {isLogin ? (
               <LogInIcon className="size-4" aria-hidden />
-            ) : isConnect ? (
+            ) : isConnect || isConnectInput ? (
               <PlugIcon className="size-4" aria-hidden />
             ) : (
               <ShieldAlertIcon className="size-4" aria-hidden />
@@ -201,6 +215,27 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
           </div>
         ) : null}
 
+        {isConnectInput ? (
+          <label className="flex flex-col gap-1.5">
+            <span className="font-sans text-[12px] font-medium text-sh-text">
+              {pendingApproval.inputLabel ?? "Value"}
+            </span>
+            <Input
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleApprove()
+              }}
+              placeholder={pendingApproval.inputPlaceholder}
+              autoComplete="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              autoFocus
+              className="h-9 rounded-lg border-sh-border bg-sh-bg font-sans text-[13px] shadow-none"
+            />
+          </label>
+        ) : null}
+
         {timedOut ? (
           <div className="flex flex-col gap-2">
             <p className="font-sans text-[13px] text-sh-error" role="alert">
@@ -260,7 +295,7 @@ export function TaskApprovalCard({ className }: TaskApprovalCardProps) {
             <Button
               type="button"
               size="sm"
-              disabled={timedOut}
+              disabled={timedOut || (isConnectInput && !inputValue.trim())}
               onClick={handleApprove}
             >
               <CheckIcon data-icon="inline-start" className="size-3.5" />

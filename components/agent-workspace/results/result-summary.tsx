@@ -2,6 +2,7 @@
 
 import { BankRecResultView } from "@/components/agent-workspace/results/bank-rec-result"
 import { CommerceRecResultView } from "@/components/agent-workspace/results/commerce-rec-result"
+import { QuickAnswerResultView } from "@/components/agent-workspace/results/quick-answer-result"
 import { MonthEndResultView } from "@/components/agent-workspace/results/month-end-result"
 import { ReceiptChaseResultView } from "@/components/agent-workspace/results/receipt-chase-result"
 import {
@@ -13,6 +14,7 @@ import type {
   BankRecDiffResult,
   CommerceReconciliationResult,
   MonthEndExceptionReport,
+  QuickAnswerResult,
   ReceiptChaseResult,
   TaskResult,
   TaxCodeDeltaBriefResult,
@@ -49,6 +51,10 @@ function TaskResultBody({ result }: { result: TaskResult }) {
           data={result.extractedData as ReceiptChaseResult}
         />
       )
+    case "quick_answer":
+      return (
+        <QuickAnswerResultView data={result.extractedData as QuickAnswerResult} />
+      )
     default:
       return null
   }
@@ -61,6 +67,7 @@ function hasTaskResultBody(result: TaskResult): boolean {
     case "commerce_reconciliation":
     case "bank_rec_diff":
     case "receipt_chase":
+    case "quick_answer":
       return true
     default:
       return false
@@ -87,7 +94,7 @@ export function ResultSummary({ hideMeta = false }: ResultSummaryProps) {
   return (
     <div className="flex flex-col gap-9">
       {hideMeta ? null : <ResultMeta result={result} />}
-      <TaskResultBody result={result} />
+      {result.outcome === "failed" ? null : <TaskResultBody result={result} />}
       {hideMeta ? null : <ResultFollowUps result={result} />}
     </div>
   )

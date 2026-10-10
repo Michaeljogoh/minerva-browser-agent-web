@@ -6,6 +6,7 @@ export const TASK_TYPE_LABEL: Record<TaskType, string> = {
   commerce_reconciliation: "Commerce reconciliation",
   bank_rec_diff: "Bank reconciliation",
   receipt_chase: "Receipt chase",
+  quick_answer: "Quick answer",
 }
 
 export function formatUsd(amount?: number): string {

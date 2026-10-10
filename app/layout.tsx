@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GooeyToaster } from "@/components/ui/goey-toaster";
@@ -28,17 +29,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${plusJakarta.variable} ${jetbrainsMono.variable} h-full font-sans antialiased`}
-      suppressHydrationWarning
-    >
-      <body className="flex min-h-full flex-col font-sans">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <TooltipProvider>{children}</TooltipProvider>
-          <GooeyToaster />
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="en"
+        className={`${plusJakarta.variable} ${jetbrainsMono.variable} h-full font-sans antialiased`}
+        suppressHydrationWarning
+      >
+        <body className="flex min-h-full flex-col font-sans">
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <TooltipProvider>{children}</TooltipProvider>
+            <GooeyToaster />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -16,7 +16,7 @@ export async function listSessions(
   limit = 20,
 ): Promise<SessionRecordSummary[]> {
   const response = await fetch(`${backendBaseUrl()}/sessions?limit=${limit}`, {
-    headers: gatewayAuthHeaders(),
+    headers: await gatewayAuthHeaders(),
     cache: "no-store",
   })
 
@@ -29,7 +29,7 @@ export async function listSessions(
 
 export async function getSession(id: string): Promise<SessionRecord> {
   const response = await fetch(`${backendBaseUrl()}/sessions/${id}`, {
-    headers: gatewayAuthHeaders(),
+    headers: await gatewayAuthHeaders(),
     cache: "no-store",
   })
 

@@ -66,7 +66,7 @@ export interface ReasoningStep {
   }
 }
 
-export type ApprovalKind = "approval" | "login" | "connect"
+export type ApprovalKind = "approval" | "login" | "connect" | "connect_input"
 
 /** Pending ask_human — server TTL is 5 minutes (APPROVAL_TTL_MS). */
 export interface ApprovalRequest {
@@ -78,6 +78,9 @@ export interface ApprovalRequest {
   kind?: ApprovalKind
   connectUrl?: string
   appName?: string
+  /** connect_input: label and hint for the value the user types. */
+  inputLabel?: string
+  inputPlaceholder?: string
 }
 
 export interface AgentError {

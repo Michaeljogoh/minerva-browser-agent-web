@@ -1,16 +1,13 @@
 "use client"
 
-import { FileSearchIcon, FileWarningIcon, SendIcon } from "lucide-react"
-
 import type { ReceiptChaseResult } from "@/lib/types/task-results"
 import { StatusBadge } from "@/components/agent-workspace/results/result-badges"
 import {
   ResultContext,
   ResultSection,
   ResultTableFrame,
-  StatGrid,
+  CountLine,
   resultTable,
-  toneWhen,
 } from "@/components/agent-workspace/results/result-primitives"
 import {
   Table,
@@ -32,28 +29,16 @@ export function ReceiptChaseResultView({ data }: ReceiptChaseResultViewProps) {
     <div className="motion-stagger flex flex-col gap-8">
       <ResultContext clientName={data.clientName} period={data.period} />
 
-      <StatGrid
+      <CountLine
         items={[
-          {
-            label: "Found",
-            value: String(data.totals.foundCount),
-            icon: FileSearchIcon,
-          },
-          {
-            label: "Posted",
-            value: String(data.totals.postedCount),
-            icon: SendIcon,
-            tone: "success",
-          },
-          {
-            label: "Missing",
-            value: String(data.totals.missingCount),
-            icon: FileWarningIcon,
-            tone: toneWhen(data.totals.missingCount, "error"),
-          },
+          { label: "found", value: data.totals.foundCount },
+          { label: "posted", value: data.totals.postedCount, tone: "success" },
+          { label: "missing", value: data.totals.missingCount, tone: "error" },
         ]}
       />
 
+
+      {data.items.length > 0 ? (
       <ResultSection title="Receipts" count={data.items.length}>
         <ResultTableFrame>
           <Table>
@@ -101,6 +86,7 @@ export function ReceiptChaseResultView({ data }: ReceiptChaseResultViewProps) {
           </Table>
         </ResultTableFrame>
       </ResultSection>
+      ) : null}
     </div>
   )
 }

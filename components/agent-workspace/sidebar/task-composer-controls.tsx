@@ -25,7 +25,12 @@ import {
   selectActiveModel,
   useModelSettingsStore,
 } from "@/store/model-settings.store"
-import { ChevronDownIcon, KeyRoundIcon, Settings2Icon } from "lucide-react"
+import {
+  ArrowLeftIcon,
+  ChevronDownIcon,
+  KeyRoundIcon,
+  Settings2Icon,
+} from "lucide-react"
 
 const SPEED_OPTIONS = [
   { value: 0.5, label: "Slower" },
@@ -99,7 +104,7 @@ export function TaskComposerControls() {
         />
         <DropdownMenuContent
           align="start"
-          className="min-w-64 rounded-xl border-sh-border bg-sh-surface-raised p-1 text-sh-text shadow-lg"
+          className="min-w-96 rounded-xl border-sh-border bg-sh-surface-raised p-1 text-sh-text shadow-lg"
         >
           <DropdownMenuGroup>
             <DropdownMenuLabel className="font-sans text-[11px] text-sh-text-muted">
@@ -123,6 +128,13 @@ export function TaskComposerControls() {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {status === "complete" || status === "error" ? (
+        <ComposerPill aria-label="Back to task templates" onClick={reset}>
+          <ArrowLeftIcon className="size-3 shrink-0" />
+          New task
+        </ComposerPill>
+      ) : null}
 
       <DropdownMenu>
         <DropdownMenuTrigger

@@ -66,9 +66,15 @@ export interface HumanApprovalRequiredPayload {
   approvalId: string
   question: string
   context: string
-  kind?: "approval" | "login" | "connect"
+  kind?: "approval" | "login" | "connect" | "connect_input"
   connectUrl?: string
   appName?: string
+  inputLabel?: string
+  inputPlaceholder?: string
+}
+
+export interface ConnectionReadyPayload {
+  toolkit: string
 }
 
 export interface AgentErrorPayload {
@@ -105,6 +111,7 @@ export type ServerInboundEventName =
   | "agent_observation"
   | "screenshot"
   | "human_approval_required"
+  | "connection_ready"
   | "agent_error"
   | "task_complete"
   | "task_paused"
@@ -120,6 +127,7 @@ export const SERVER_INBOUND_EVENTS = [
   "agent_observation",
   "screenshot",
   "human_approval_required",
+  "connection_ready",
   "agent_error",
   "task_complete",
   "task_paused",
@@ -225,12 +233,25 @@ export function parseHumanApprovalRequiredPayload(
     question: payload.question,
     context: payload.context,
     kind:
-      payload.kind === "login" || payload.kind === "connect"
+      payload.kind === "login" ||
+      payload.kind === "connect" ||
+      payload.kind === "connect_input"
         ? payload.kind
         : "approval",
     connectUrl: isString(payload.connectUrl) ? payload.connectUrl : undefined,
     appName: isString(payload.appName) ? payload.appName : undefined,
+    inputLabel: isString(payload.inputLabel) ? payload.inputLabel : undefined,
+    inputPlaceholder: isString(payload.inputPlaceholder)
+      ? payload.inputPlaceholder
+      : undefined,
   }
+}
+
+export function parseConnectionReadyPayload(
+  payload: unknown,
+): ConnectionReadyPayload | null {
+  if (!isRecord(payload) || !isString(payload.toolkit)) return null
+  return { toolkit: payload.toolkit }
 }
 
 export function parseAgentErrorPayload(

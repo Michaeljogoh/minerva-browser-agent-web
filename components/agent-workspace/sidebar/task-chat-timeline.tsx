@@ -59,6 +59,14 @@ type TaskChatTimelineProps = {
   className?: string
 }
 
+/** Strips markdown bullets and emphasis markers so the summary reads as plain text. */
+function cleanSummary(text: string): string {
+  return text
+    .replace(/^\s*[*-]\s+/gm, "")
+    .replace(/\*+/g, "")
+    .trim()
+}
+
 export function TaskChatTimeline({ className }: TaskChatTimelineProps) {
   const status = useAgentStore((s) => s.status)
   const reasoningSteps = useAgentStore((s) => s.reasoningSteps)
@@ -175,7 +183,7 @@ export function TaskChatTimeline({ className }: TaskChatTimelineProps) {
             </span>
           </p>
           <p className="text-[13px] leading-relaxed text-pretty text-sh-text">
-            {result.summary}
+            {cleanSummary(result.summary)}
           </p>
         </div>
       ) : null}
